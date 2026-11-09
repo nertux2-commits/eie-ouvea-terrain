@@ -54,10 +54,11 @@ if(top&&!top.querySelector('.notebtn')){const st=$('#st');const b=h('button',{cl
  const m=h('button',{class:'notebtn',title:'Mémo vocal rapide',onclick:()=>{if(S.tab!=='carnet')S.prevTab=S.tab;quickVoice()}},'🎙');const w=h('span',{class:'hbtns'},m,b);st.after(w)}
 
 /* ---------- Préparation du téléphone ---------- */
-const NEED=['index.html','app.js','prot.js','patch.js','photos.js','ui.js','extra.js','flore.js','florule.js','saisie.js','terrain.js','carte_ortho.jpg','carte_A3.pdf','ill_perruche.jpg',...[0,1,2,3,4,5,6].map(i=>'florule/f'+i+'.jpg')];
+const NEED=['index.html','app.js','prot.js','patch.js','photos.js','ui.js','extra.js','flore.js','florule.js','saisie.js','terrain.js','guide.js','carte_ortho.jpg','carte_A3.pdf','ill_perruche.jpg',...[0,1,2,3,4,5,6].map(i=>'florule/f'+i+'.jpg')];
 let DEFER=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();DEFER=e;if(S.tab==='accueil')render()});
 const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent);
+window.eieChecks=()=>checks();
 async function checks(){const r={};
  r.nom=!!S.obs;r.code=!!S.team;r.app=standalone();
  try{let n=0;for(const f of NEED){if(await caches.match(f,{ignoreSearch:true}))n++}r.cache=[n,NEED.length]}catch(e){r.cache=[0,NEED.length]}
@@ -72,7 +73,7 @@ async function prepare(btn){btn.disabled=true;btn.textContent='Préparation…';
  if(navigator.onLine&&S.team)try{await sync(false)}catch(e){}
  toast('Téléphone préparé');render()}
 async function readyCard(){
- const c=h('div',{class:'card ready'},h('h3',{},'📱 Prêt pour le terrain ?'),h('p',{class:'muted'},'Vérification…'));V.querySelector('.tiles')?.before(c);
+ const c=h('div',{class:'card ready'},h('h3',{},'📱 Prêt pour le terrain ?'),h('p',{class:'muted'},'Vérification…'));const an=V.querySelector('.hero');an?an.after(c):V.prepend(c);
  const r=await checks();const ok=(b,t,hint)=>h('div',{class:'chk '+(b?'ok':'ko')},h('span',{},b?'✔':'✖'),h('div',{},t,hint&&!b?h('div',{class:'muted'},hint):null));
  const items=[ok(r.nom&&r.code,'Nom et code équipe','Onglet Données › Réglages.'),
   ok(r.app,'Appli installée sur l’écran d’accueil',isIOS?'Safari › bouton Partager › « Sur l’écran d’accueil ».':'Bouton ci-dessous, ou menu ⋮ de Chrome › « Installer l’application ».'),
@@ -107,7 +108,7 @@ exportPhotos=async function(){let ph=await pAll();if(S.team&&navigator.onLine&&c
 /* ---------- Rendu ---------- */
 const _r=render;render=function(){
  if(S.tab==='carnet'){clearInterval(TICK);V.innerHTML='';document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('on'));vCarnet();renderStatus();window.scrollTo(0,0);return}
- _r();if(S.tab==='accueil'){readyCard();const t=V.querySelector('.tiles');if(t)t.prepend(h('button',{class:'tile',onclick:()=>{S.tab='carnet';saveS();render()}},h('div',{class:'tart',style:'background:#FFFDE7;display:flex;align-items:center;justify-content:center;font-size:46px'},'📝'),h('div',{class:'tcap'},h('b',{},'Carnet de terrain'),h('span',{class:'who'},'Notes, dictée, mémos vocaux, photos'),h('span',{class:'inf'},`${live('note').length} note(s)`))))}};
+ _r();if(S.tab==='donnees')readyCard()};
 document.head.append(h('style',{},`.hbtns{display:flex;gap:6px;margin-left:6px}.notebtn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:10px;font-size:20px;width:42px;height:38px}
 header .top{flex-wrap:nowrap}#st{flex:1}
 .recov{position:fixed;inset:0;z-index:50;background:rgba(20,30,25,.92);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}

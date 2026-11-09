@@ -86,10 +86,12 @@ const FLU=window.FLORULE||{},FROWS=window.FLORULE_ROWS||[];
 const two=n=>norm(n).replace(/\b(cf|aff)\.?\s/g,'').split(' ').slice(0,2).join(' ');
 const FLN=new Map(),FL2=new Map();for(const k in FLU){FLN.set(norm(k),k);if(!FL2.has(two(k)))FL2.set(two(k),k)}
 function flu(n){const k=FLN.get(norm(n))||FL2.get(two(n));return k?[k,...FLU[k]]:null}
-function fthumb(n,w,hh,big){const f=flu(n);if(!f)return null;const [,s,i]=f;const rows=FROWS[s]||8;const c=i%8,r=Math.floor(i/8);
+function envph(n){const E=window.ENVPH||{};const k=Object.keys(E).find(x=>norm(x)===norm(n)||two(x)===two(n));return k?[k,...E[k]]:null}
+const inatU=(id,sz)=>`https://inaturalist-open-data.s3.amazonaws.com/photos/${id}/${sz||'medium'}.jpeg`;
+function fthumb(n,w,hh,big){const f=flu(n);if(!f){const e=envph(n);if(!e)return null;const d=h('div',{class:'fth',style:`width:${w}px;height:${hh}px;background:#eee url('${inatU(e[1],'small')}') center/cover`});if(big)d.addEventListener('click',ev=>{ev.stopPropagation();fzoom(n)});return d}const [,s,i]=f;const rows=FROWS[s]||8;const c=i%8,r=Math.floor(i/8);
  const d=h('div',{class:'fth',style:`width:${w}px;height:${hh}px;background-image:url('florule/f${s}.jpg');background-size:800% ${rows*100}%;background-position:${c*100/7}% ${rows>1?r*100/(rows-1):0}%`});
  if(big)d.addEventListener('click',e=>{e.stopPropagation();fzoom(n)});return d}
-function fzoom(n){const f=flu(n);if(!f)return;const W=Math.min(innerWidth-20,420);
+function fzoom(n){const f=flu(n);if(!f){const e=envph(n);if(!e)return;const z=h('div',{class:'zoom',onclick:()=>z.remove()},h('img',{src:inatU(e[1],'large'),style:'max-height:75vh'}),h('div',{class:'zcap'},h('b',{},h('i',{},e[0])),h('br'),`Photo : ${e[3]||'anonyme'} (${String(e[2]).toUpperCase()}), iNaturalist – usage interne non commercial`));document.body.append(z);return}const W=Math.min(innerWidth-20,420);
  const z=h('div',{class:'zoom',onclick:()=>z.remove()},fthumb(n,W,W*4/3),h('div',{class:'zcap'},h('b',{},h('i',{},f[0])),h('br'),f[3]?'Noms : '+f[3]:'',h('br'),f[4]+' · '+f[5],h('br'),h('span',{style:'opacity:.7'},'Florule des îles Loyauté – J.-F. Butaud 2014 / Province des Îles')));document.body.append(z)}
 window.fthumb=fthumb;
 /* ---- champ avec suggestions ---- */
@@ -180,7 +182,7 @@ function vGuide(){const sec=S.gsec||'env';
  const list=h('div',{class:'glist'});V.append(list);
  if(sec==='env'){const ord=['Très fort','Fort','Moyen à fort','Moyen','Faible à moyen','Faible','Indéterminé'];
   for(const k of Object.keys(ENV).sort((a,b)=>ord.indexOf(ENV[a][2])-ord.indexOf(ENV[b][2])||a.localeCompare(b))){const v=ENV[k];const fv=flu(k);
-   const row=h('div',{class:'gi',onclick:()=>fv&&fzoom(k)},fthumb(k,54,72)||h('div',{class:'fth nop'},'pas de photo'),h('div',{class:'gt'},h('div',{},h('i',{},h('b',{},k))),h('div',{class:'acsub',html:`<span class="bdg" style="background:${ICOL[v[2]]}">Impact ${v[2].toLowerCase()}</span> ${v[0]} · Ouvéa : ${v[1]?v[1].replace('Adv.','adventice').replace('Nat.','naturalisée').replace('Subsp.','subspontanée').replace('Cult.','cultivée'):'non citée'}`}),fv&&fv[3]?h('div',{class:'vern'},fv[3]):null));list.append(row)}}
+   const row=h('div',{class:'gi',onclick:()=>fzoom(k)},fthumb(k,54,72)||h('div',{class:'fth nop'},'pas de photo'),h('div',{class:'gt'},h('div',{},h('i',{},h('b',{},k))),h('div',{class:'acsub',html:`<span class="bdg" style="background:${ICOL[v[2]]}">Impact ${v[2].toLowerCase()}</span> ${v[0]} · Ouvéa : ${v[1]?v[1].replace('Adv.','adventice').replace('Nat.','naturalisée').replace('Subsp.','subspontanée').replace('Cult.','cultivée'):'non citée'}`}),fv&&fv[3]?h('div',{class:'vern'},fv[3]):null));list.append(row)}}
  else for(const f of FAUNE[sec]){list.append(h('div',{class:'gi'},h('div',{class:'gt'},h('div',{},h('b',{},f[0])),h('div',{class:'acsub',html:badge({n:f[0],fam:f[1],stl:f[2]})+' '+f[1].replace(' – ENVAHISSANTE','')}))))}}
 const _r5=render;render=function(){if(S.tab==='guide'){clearInterval(TICK);V.innerHTML='';document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('on'));vGuide();renderStatus();window.scrollTo(0,0);return}
  _r5();const go=sec=>{S.gsec=sec;S.tab='guide';saveS();render()};
