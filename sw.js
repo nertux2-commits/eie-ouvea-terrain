@@ -1,6 +1,6 @@
-const C='eieterrain-v1.5.0';
-const FILES=['./','index.html','app.js','prot.js','patch.js','photos.js','ui.js','extra.js','carte_ortho.jpg','carte_A3.pdf','manifest.webmanifest','icon.svg'];
+const C='eieterrain-v1.7.0';
+const FILES=['./','index.html','app.js','prot.js','patch.js','photos.js','ui.js','extra.js','flore.js','saisie.js','florule.js','ill_perruche.jpg','florule/f0.jpg','florule/f1.jpg','florule/f2.jpg','florule/f3.jpg','florule/f4.jpg','florule/f5.jpg','florule/f6.jpg','carte_ortho.jpg','carte_A3.pdf','manifest.webmanifest','icon.svg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>Promise.all(FILES.map(f=>fetch(new Request(f,{cache:'reload'})).then(r=>{if(r.ok)return c.put(f,r)})))).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('eieterrain-')&&k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
-self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(u.origin!==location.origin||e.request.method!=='GET')return;
+self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(u.hostname==='inaturalist-open-data.s3.amazonaws.com'){e.respondWith(caches.match(e.request.url).then(r=>r||fetch(e.request).then(n=>{const cp=n.clone();caches.open('eie-ill').then(c=>c.put(e.request.url,cp));return n})));return}if(u.origin!==location.origin||e.request.method!=='GET')return;
  e.respondWith(caches.open(C).then(c=>c.match(e.request,{ignoreSearch:true})).then(r=>r||fetch(e.request).then(n=>{if(n.ok){const cp=n.clone();caches.open(C).then(c=>c.put(e.request,cp))}return n}).catch(()=>caches.open(C).then(c=>c.match('index.html')))))});
