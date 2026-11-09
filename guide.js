@@ -27,19 +27,20 @@ function setDone(k,v){let r=live('etape').find(x=>x.key===k);if(!r)r=newRec('eta
 const PLAN=[
  ['2026-11-10','Matin','Tous','Traversée Lifou – Ouvéa sur l’Eötr, installation',null],
  ['2026-11-10','14 h – 17 h 30','Tous','Mise en place : piquets de l’emprise (M1, M2, M3), quarts, petits carrés 5 × 5 en haut à droite, puis placette P1','carte'],
+ ['2026-11-10','19 h – 20 h 30','Glwadys,Marvin','Reptiles de nuit n° 1','reptiles'],
  ['2026-11-10','Soir','Tous','Charger téléphone, GPS, appareil photo ; Données › « Tout préparer »','donnees'],
- ['2026-11-11','5 h 15','Cédric','Oiseaux : point d’écoute O1 + parcours (passage 1)','oiseaux'],
+ ['2026-11-11','6 h 30','Cédric','Oiseaux : point d’écoute O1 + parcours (passage 1)','oiseaux'],
  ['2026-11-11','7 h 30 – 12 h','Georges,Jean-Marie,Glwadys,Cédric','Plantes : carré M1','plantes:M1'],
  ['2026-11-11','8 h – 10 h 30','Marvin','Fourmis : postes F1, F2, F3 (centre de M1, M2, M3), puis plantes M1','fourmis'],
  ['2026-11-11','13 h – 17 h','Tous','Plantes : carré M2','plantes:M2'],
  ['2026-11-11','17 h 30 – 18 h 30','Tous','Contrôle des saisies, herbier','donnees'],
- ['2026-11-11','19 h 30 – 21 h 30','Glwadys,Marvin','Reptiles de nuit n° 1','reptiles'],
- ['2026-11-12','5 h 15','Cédric','Oiseaux : passage 2 (même heure que la veille)','oiseaux'],
+ ['2026-11-11','19 h – 20 h 30','Glwadys,Marvin','Reptiles de nuit n° 2','reptiles'],
+ ['2026-11-12','6 h 30','Cédric','Oiseaux : passage 2 (6 h 30, même heure que la veille)','oiseaux'],
  ['2026-11-12','7 h 30 – 12 h','Georges,Jean-Marie,Glwadys,Cédric','Plantes : carré M3','plantes:M3'],
  ['2026-11-12','8 h – 10 h 30','Marvin','Fourmis : poste F4 (centre de P1), puis plantes M3','fourmis'],
  ['2026-11-12','13 h – 17 h','Tous','Plantes : placette témoin P1','plantes:P1'],
  ['2026-11-12','17 h 30 – 18 h 30','Tous','Contrôle des saisies','donnees'],
- ['2026-11-12','19 h 30 – 21 h 30','Glwadys,Marvin','Reptiles de nuit n° 2','reptiles'],
+ ['2026-11-12','19 h – 20 h 30','Glwadys,Marvin','Réserve : reptiles de nuit seulement si une nuit a été annulée (pluie)','reptiles'],
  ['2026-11-13','7 h 30 – 8 h 30','Glwadys,Marvin','Reptiles de jour','reptiles'],
  ['2026-11-13','8 h 30 – 12 h','Tous','Compléments : arbres oubliés, espèces protégées, herbier, photos manquantes','plantes'],
  ['2026-11-13','Après-midi','Tous','Contrôle final, synchronisation, nettoyage du matériel (biosécurité)','donnees'],
@@ -68,7 +69,7 @@ function vAccueil(){
  const big=h('div',{class:'bigtiles'});
  for(const [t,l] of [['plantes','Plantes'],['reptiles','Reptiles'],['fourmis','Fourmis'],['oiseaux','Oiseaux']]){const ph=(window.PHOTOS||{})[t];
   big.append(h('button',{class:'bt',onclick:()=>goTo(t)},h('div',{class:'bimg',style:ph?`background-image:url('${ph}')`:''}),h('div',{class:'bl'},h('b',{},l),h('span',{},prog[t]()))))}
- V.append(big);
+ V.append(big,h('p',{class:'muted',style:'font-size:10px;margin:-4px 0 8px'},'Photos : DENV – Province des Îles ; gecko L. Hudel (CC BY) et fourmi P.-L. Stenger (CC BY-NC), iNaturalist.'));
  V.append(h('div',{class:'minirow'},[['carte','🗺','Carte'],['carnet','📝','Carnet'],['florule','🌿','Florule'],['donnees','☁','Données']].map(([t,i,l])=>h('button',{onclick:()=>goTo(t)},h('span',{class:'mi'},i),l))));
  const warn=h('div');V.append(warn);
  if(window.eieChecks)window.eieChecks().then(r=>{const ok=r.nom&&r.code&&r.cache[0]===r.cache[1]&&r.persist!==false&&r.gps==='granted';if(!ok)warn.append(h('button',{class:'warnbar',onclick:()=>goTo('donnees')},'⚠ Téléphone pas encore prêt pour le terrain – toucher ici'))});
@@ -106,11 +107,11 @@ function guidePlantes(){
  return st}
 function guideReptiles(){const s=R[S.rep];const ok=s&&!s.deleted;
  const steps=[
-  {k:'r1',t:'Créer la session',x:'Nuit : débuter 30 min après le coucher du soleil, pour 2 h (19 h 30 – 21 h 30). Jour : vendredi 7 h 30 – 8 h 30, temps ensoleillé. Toujours à deux. Noter la température et la météo ; pas de session sous forte pluie.',done:ok,go:()=>{setTimeout(()=>[...document.querySelectorAll('.workarea button')].find(b=>/Nouvelle/.test(b.textContent))?.click(),200)},gl:'+ Nouvelle session ↓'},
+  {k:'r1',t:'Créer la session',x:'Nuit : mardi et mercredi, 19 h – 20 h 30 (coucher du soleil ≈ 18 h 08, on démarre au moins 30 min après), 1 h 30 de recherche, fin avant 20 h 30. Jour : vendredi 7 h 30 – 8 h 30, temps ensoleillé. Toujours à deux. Noter la température et la météo ; pas de session sous forte pluie.',done:ok,go:()=>{setTimeout(()=>[...document.querySelectorAll('.workarea button')].find(b=>/Nouvelle/.test(b.textContent))?.click(),200)},gl:'+ Nouvelle session ↓'},
   {k:'r2',t:'Démarrer le chrono',x:'Au début de la bande de 5 m : toucher « Démarrer ». Le chrono compte le temps de recherche effectif.',done:ok&&!!s.debut,gl:'Aller au chrono ↓',go:()=>{}},
   {k:'r3',t:'Chercher et noter chaque reptile',x:'Avancer lentement côte à côte : troncs, branches basses, feuillage, litière, blocs coralliens. La nuit, les yeux des geckos brillent à la frontale. Pour chaque reptile : « Reptile vu » (le chrono se met en pause), photo par Glwadys.',done:ok&&live('rep_obs').some(r=>r.session===s.id),c:ok?`${live('rep_obs').filter(r=>r.session===s.id).length} reptile(s)`:'',gl:'Reptile vu ↓',go:()=>{setTimeout(()=>document.querySelector('.workarea .btn.big')?.click(),200)}},
-  {k:'r4',t:'Terminer la session',x:'Après 2 h de recherche (1 h de jour) : « Terminer ». L’heure de fin et la durée sont enregistrées.',done:ok&&!!s.fin,gl:'Aller au chrono ↓',go:()=>{}}];
- const ses=[['Nuit','Nuit n° 1 (mer.)'],['Nuit','Nuit n° 2 (jeu.)'],['Jour','Jour (ven.)']];const all=live('rep_session').sort((a,b)=>a.ts<b.ts?-1:1);
+  {k:'r4',t:'Terminer la session',x:'Après 1 h 30 de recherche la nuit (fin avant 20 h 30), 1 h de jour : « Terminer ». L’heure de fin et la durée sont enregistrées.',done:ok&&!!s.fin,gl:'Aller au chrono ↓',go:()=>{}}];
+ const ses=[['Nuit','Nuit n° 1 (mar.)'],['Nuit','Nuit n° 2 (mer.)'],['Jour','Jour (ven.)']];const all=live('rep_session').sort((a,b)=>a.ts<b.ts?-1:1);
  const sum=h('div',{class:'muted'},'Sessions prévues : '+ses.map(([j,l],i)=>{const x=all.filter(z=>z.jour_nuit===j)[j==='Nuit'?i:0];return `${l} ${x&&x.fin?'✔':x?'⏳':'○'}`}).join(' · '));
  return stepper('Méthode – reptiles',steps,sum,h('div',{class:'stfoot'},spLink('reptiles')))}
 function guideFourmis(){const s=R[S.fo];const ok=s&&!s.deleted;const p=ok?s.poste:(S.poste||'F1');const el=ok&&s.t0?Date.now()-Date.parse(s.t0):0;
@@ -127,7 +128,7 @@ function timer15(){const t0=Date.now();const lab=h('b',{},'15:00');const ov=h('d
  const iv=setInterval(()=>{const l=900000-(Date.now()-t0);if(l<=0){clearInterval(iv);lab.textContent='Terminé';vibrate();beep();return}lab.textContent=fmt(l)},500)}
 function guideOiseaux(){const s=R[S.oi];const ok=s&&!s.deleted;const el=ok&&s.t0?Date.now()-Date.parse(s.t0):0;
  const steps=[
-  {k:'o1',t:'Créer le passage',x:'Mercredi (passage 1) et jeudi (passage 2), au lever du soleil (≈ 5 h 15), même heure les deux matins. Pas de relevé par vent fort ou pluie. Noter la météo et le vent.',done:ok,go:()=>{S.oisub='point';setTimeout(()=>[...document.querySelectorAll('.workarea button')].find(b=>/Nouvelle/.test(b.textContent))?.click(),200)},gl:'+ Nouveau passage ↓'},
+  {k:'o1',t:'Créer le passage',x:'Mercredi (passage 1) et jeudi (passage 2) à 6 h 30, exactement à la même heure les deux matins. Pas de relevé par vent fort ou pluie. Noter la météo et le vent.',done:ok,go:()=>{S.oisub='point';setTimeout(()=>[...document.querySelectorAll('.workarea button')].find(b=>/Nouvelle/.test(b.textContent))?.click(),200)},gl:'+ Nouveau passage ↓'},
   {k:'o2',t:'Arriver en silence au point O1',x:'Rejoindre le centre de l’emprise (point OUV-O1 dans le GPS et l’onglet Carte), puis attendre 1 minute sans bouger avant de démarrer.',done:ok&&(isDone('oi_arr_'+s.id)||!!s.t0),man:ok?'oi_arr_'+s.id:null,go:null},
   {k:'o3',t:'Écoute 10 minutes',x:'Toucher « Démarrer l’écoute ». Noter chaque oiseau vu ou entendu (tapez le code à 4 lettres, ex. PEOU, MALO) : contact, distance < ou > 15 m. Alarme à 10 min.',done:ok&&el>=600000,c:ok&&s.t0&&el<600000?`reste ${Math.ceil((600000-el)/60000)} min`:'',gl:'Démarrer / noter ↓',go:()=>{S.oisub='point'}},
   {k:'o4',t:'Parcours lent 20 minutes',x:'Marcher lentement dans l’emprise et continuer à noter (phase « Parcours » remplie toute seule). Alarme à la fin.',done:ok&&el>=1800000,c:ok&&s.t0&&el>=600000&&el<1800000?`reste ${Math.ceil((1800000-el)/60000)} min`:'',gl:'Noter ↓',go:()=>{S.oisub='point'}},
@@ -169,7 +170,7 @@ document.head.append(h('style',{},`.welcome{position:fixed;inset:0;z-index:60;ba
 .qchips{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 0 8px}.qc{border:1px solid #D5DCD7;border-radius:10px;padding:6px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:13px}.qc b{flex:1 0 100%}.qc.d{background:#EEF7F0;border-color:#2E7D4F}.qc button{border:1px solid #2E7D4F;background:#fff;color:#1F4D33;border-radius:8px;padding:4px 8px;font-size:13px}.qc button.on{background:#2E7D4F;color:#fff}
 .carsel{margin:4px 0 8px}.stfoot{margin-top:6px}.linkb{border:0;background:none;color:#2E7D4F;font-weight:700;padding:6px 0;font-size:14px}
 .workarea{border-top:3px dashed #9BB8A5;margin-top:6px;padding-top:6px}.wah{font-weight:800;color:#1F4D33;margin:4px 0 8px;font-size:15px}
-.hero .art{height:72px!important;min-height:0!important}.hero .art img,.hero .art svg{height:72px!important;width:100%;object-fit:cover}.hero .cap{padding:6px 10px!important}.hero .cap span{display:none}.hero .credit{display:none}
+.hero .art{height:72px!important;min-height:0!important}.hero .art img,.hero .art svg{height:72px!important;width:100%;object-fit:cover}.hero .cap{padding:6px 10px!important}.hero .cap span{display:none}.hero .credit{font-size:9px!important;padding:1px 4px!important}
 .tmr{position:fixed;left:50%;transform:translateX(-50%);bottom:84px;z-index:40;background:#1F4D33;color:#fff;border-radius:24px;padding:10px 16px;display:flex;gap:10px;align-items:center;box-shadow:0 4px 12px rgba(0,0,0,.3)}.tmr button{background:none;border:0;color:#fff;font-size:18px}`));
 
 S.tab='accueil';saveS();render();
