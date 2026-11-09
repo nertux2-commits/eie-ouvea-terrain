@@ -38,6 +38,21 @@ const FAUNE={
   ['Oiseau indéterminé','noter le chant / la description','Inconnu']]};
 for(const [arr,k] of [[REPTILES,'reptiles'],[FOURMIS,'fourmis'],[OISEAUX,'oiseaux']]){arr.length=0;arr.push(...FAUNE[k].map(f=>f[0]))}
 const FCOL={'Endémique Ouvéa':'#0B6B2E','Endémique Loyauté':'#1B7F3B','Endémique NC':'#2E7D4F','Indigène':'#1565C0','Introduite':'#757575','Inconnu':'#9E9E9E'};
+
+/* ---- plantes envahissantes : Butaud 2014, tableaux 14 et 15 ---- */
+const ENV={"Agave americana":["Agavaceae","Cult. Rare","Fort"],"Furcraea foetida":["Agavaceae","Subsp. Peu commun","Fort"],"Schinus terebenthifolius":["Anacardiaceae","Subsp. ?","Fort"],"Brassaia actinophylla":["Araliaceae","Subsp. Assez commun","Fort"],"Asparagus setaceus":["Asparagaceae","Adv. Assez commun","Faible"],"Mikania micrantha":["Asteraceae","? ?","Indéterminé"],"Pluchea odorata":["Asteraceae","Nat. Commun","Très fort"],"Pseudogynoxys chenopodioides":["Asteraceae","Subsp. Rare","Indéterminé"],"Sphagneticola trilobata":["Asteraceae","Adv. Peu commun","Moyen à fort"],"Spathodea campanulata":["Bignoniaceae","Subsp. Rare","Faible à moyen"],"Tecoma stans":["Bignoniaceae","Adv. Commun","Fort"],"Opuntia stricta":["Cactaceae","Cult. Rare","Faible à moyen"],"Delonix regia":["Caesalpiniaceae","Adv. Commun","Faible"],"Senna tora":["Caesalpiniaceae","Adv. Peu commun","Faible"],"Tradescantia spathacea":["Commelinaceae","Subsp. Assez commun","Fort"],"Tradescantia zebrina":["Commelinaceae","Subsp. Peu commun","Faible à moyen"],"Kalanchoe daigremontiana":["Crassulaceae","Subsp. Rare","Faible à moyen"],"Kalanchoe delagoensis":["Crassulaceae","Adv. Assez commun","Faible"],"Kalanchoe pinnata":["Crassulaceae","Adv. Assez commun","Moyen à fort"],"Cyperus involucratus":["Cyperaceae","Adv. Peu commun","Faible à moyen"],"Ricinus communis":["Euphorbiaceae","Adv. Commun","Moyen"],"Flemingia strobilifera":["Fabaceae","Subsp. Rare","Moyen"],"Neonotonia wightii":["Fabaceae","Adv. Peu commun","Moyen"],"Stylosanthes scabra":["Fabaceae","Adv. Rare","Faible"],"Clerodendrum buchananii var. fallax":["Lamiaceae","Nat. Assez commun","Faible"],"Hyptis pectinata":["Lamiaceae","Adv. Rare","Faible"],"Ocimum gratissimum":["Lamiaceae","Adv. Rare","Faible à moyen"],"Melia azedarach":["Meliaceae","Adv. Assez commun","Moyen"],"Adenanthera pavonina":["Mimosaceae","Nat. Assez commun","Moyen"],"Leucaena leucocephala":["Mimosaceae","Adv. Assez commun","Moyen à fort"],"Mimosa diplotricha var. diplotricha":["Mimosaceae","Adv. ?","Faible à moyen"],"Psidium cattleianum":["Myrtaceae","Cult. Très rare","Très fort"],"Syzygium cumini":["Myrtaceae","Adv. Assez commun","Fort"],"Syzygium jambos":["Myrtaceae","Subsp. Rare","Moyen à fort"],"Passiflora maliformis":["Passifloraceae","Subsp. Assez commun","Faible à moyen"],"Passiflora suberosa":["Passifloraceae","Nat. Commun","Moyen"],"Turnera ulmifolia":["Passifloraceae","Nat. Commun","Moyen"],"Rivina humilis":["Phytolaccaceae","Nat. Commun","Moyen"],"Arundo donax":["Poaceae","Adv. Peu commun","Moyen à fort"],"Megathyrsus maximus":["Poaceae","Adv. Commun","Moyen"],"Phyllostachys cf. flexuosa":["Poaceae","Subsp. Rare","Moyen à fort"],"Stenotaphrum secundatum":["Poaceae","Adv. Commun","Moyen à fort"],"Cestrum nocturnum":["Solanaceae","Cult. Rare","Moyen"],"Solanum torvum":["Solanaceae","Adv. Assez commun","Moyen à fort"],"Typha domingensis":["Typhaceae","Nat. Commun","Fort"],"Lantana camara":["Verbenaceae","Nat. Commun","Fort"]};
+const ENVN=new Map(Object.keys(ENV).map(k=>[norm(k),k]));
+const envOf=n=>{const k=ENVN.get(norm(n))||[...ENVN.entries()].find(([a])=>a.split(' ').slice(0,2).join(' ')===norm(n).split(' ').slice(0,2).join(' '))?.[1];return k?[k,...ENV[k]]:null};
+const ICOL={'Très fort':'#B71C1C','Fort':'#D84315','Moyen à fort':'#EF6C00','Moyen':'#F9A825','Faible à moyen':'#9E9D24','Faible':'#7CB342','Indéterminé':'#8D6E63'};
+SCH.eee={titre:'Fiche 6 – Plantes envahissantes',ctx:['carre','quart'],f:[
+ ['espece','Espèce envahissante','text','envahissantes',true],
+ ['recouvrement','Recouvrement dans le quart','codes'],
+ ['stade','Stade','sel',['','Plantules','Jeunes','Adultes','Adultes en fleurs / fruits']],
+ ['surface','Surface touchée (m²)','num'],['gps','Point GPS','gps'],['photos','Photos','photo'],['remarque','Remarque','text']],
+ lab:r=>`${r.carre}${r.quart} – ${r.espece} – ${r.recouvrement||'·'}${r.stade?' – '+r.stade:''}`};
+if(!SHEETS.some(x=>x[0]==='eee'))SHEETS.splice(6,0,['eee','F6_Envahissantes']);
+const _vP2=vPlantes;vPlantes=function(){_vP2();const sb=V.querySelector('.sub');if(sb&&!sb.querySelector('.eeeb')){sb.append(h('button',{class:'eeeb'+(S.sub==='eee'?' on':''),onclick:()=>{S.sub='eee';saveS();render()}},'⚠ Envahissantes'))}
+ if(S.sub==='eee'){const f=V.querySelector('.card.form');if(f)f.before(h('p',{class:'help'},'Noter chaque plante envahissante vue dans le quart (liste Butaud 2014 en premier dans les suggestions). Recouvrement : mêmes codes que la fiche 1. Photo conseillée.'))}};
 /* ---- index des noms ---- */
 const PROTM=new Map(PROT.map(p=>[norm(p[0]),p]));
 let IDX=null;
@@ -46,20 +61,22 @@ function plantIndex(){if(IDX)return IDX;const m=new Map();
  for(const p of PROT){const k=norm(p[0]);if(!m.has(k))m.set(k,{n:p[0],fam:p[1],st:'',ty:'',ouv:1,ab:p[3]||''})}
  IDX=m;return m}
 function entries(kind){
- if(kind==='plantes'){const m=plantIndex();for(const k in FLU){if(!m.has(norm(k))&&!m.has(two(k))){const st=/Endémique des Loyauté|Endémique Loyauté/.test(FLU[k][4])?'L':/Endémique/.test(FLU[k][4])?'N':/Introduction/.test(FLU[k][4])?'A':'I';m.set(norm(k),{n:k,fam:FLU[k][3].split('–')[0].trim(),st,ty:FLU[k][3].split('–')[1]||'',ouv:1,ab:''})}}const extra=lists().plantes.filter(n=>!m.has(norm(n))).map(n=>({n,fam:'saisie équipe',st:'',ty:'',ouv:1,ab:'',team:1}));return [...m.values(),...extra]}
+ if(kind==='envahissantes')return entries('plantes');
+ if(kind==='plantes'){const m=plantIndex();for(const k in ENV){if(!m.has(norm(k)))m.set(norm(k),{n:k,fam:ENV[k][0],st:'M',ty:'',ouv:ENV[k][1]?1:0,ab:''})}for(const k in FLU){if(!m.has(norm(k))&&!m.has(two(k))){const st=/Endémique des Loyauté|Endémique Loyauté/.test(FLU[k][4])?'L':/Endémique/.test(FLU[k][4])?'N':/Introduction/.test(FLU[k][4])?'A':'I';m.set(norm(k),{n:k,fam:FLU[k][3].split('–')[0].trim(),st,ty:FLU[k][3].split('–')[1]||'',ouv:1,ab:''})}}const extra=lists().plantes.filter(n=>!m.has(norm(n))).map(n=>({n,fam:'saisie équipe',st:'',ty:'',ouv:1,ab:'',team:1}));return [...m.values(),...extra]}
  const F=FAUNE[kind]||[];const known=new Set(F.map(f=>norm(f[0])));
  return [...F.map(f=>({n:f[0],fam:f[1],stl:f[2],st:'',ty:'',ouv:1,ab:''})),...(lists()[kind]||[]).filter(n=>!known.has(norm(n))&&!/–|\(/.test(n)).map(n=>({n,fam:'saisie équipe',st:'',ty:'',ouv:1,ab:'',team:1}))]}
 function info(n){return plantIndex().get(norm(n))}
 function search(kind,q){const qs=norm(q).split(' ').filter(Boolean);if(!qs.length)return[];const out=[];
- for(const e of entries(kind)){const fv=kind==='plantes'?flu(e.n):null;const w=norm(e.n+(kind==='plantes'?(fv?' '+fv[3]:''):' '+e.fam)).replace(/[·()'’-]/g,' ').split(' ').filter(Boolean);let ok=true,pos=0;
+ for(const e of entries(kind)){const PL=kind==='plantes'||kind==='envahissantes';const fv=PL?flu(e.n):null;const w=norm(e.n+(PL?(fv?' '+fv[3]:''):' '+e.fam)).replace(/[·()'’-]/g,' ').split(' ').filter(Boolean);let ok=true,pos=0;
   for(const t of qs){const k=w.findIndex((x,i)=>i>=pos&&x.startsWith(t));if(k<0){ok=false;break}pos=k+1}
-  if(!ok)continue;let s=0;if(w[0].startsWith(qs[0]))s+=100;if(e.ouv===1)s+=30;s+=(AB[e.ab]||0)*3;if(e.team)s+=40;if(PROTM.has(norm(e.n)))s+=5;s-=e.n.length*.1;out.push([s,e])}
+  if(!ok)continue;let s=0;if(w[0].startsWith(qs[0]))s+=100;if(e.ouv===1)s+=30;s+=(AB[e.ab]||0)*3;if(e.team)s+=40;if(kind==='envahissantes'&&envOf(e.n))s+=300;if(PROTM.has(norm(e.n)))s+=5;s-=e.n.length*.1;out.push([s,e])}
  return out.sort((a,b)=>b[0]-a[0]).slice(0,8).map(x=>x[1])}
 function badge(e){const b=[];const p=PROTM.get(norm(e.n));
  if(e.st)b.push(`<span class="bdg" style="background:${STC[e.st]}">${ST[e.st]}</span>`);
  if(e.stl)b.push(`<span class="bdg" style="background:${FCOL[e.stl]||'#666'}">${e.stl}</span>`);if(/ENVAHISSANTE/.test(e.fam))b.push('<span class="bdg" style="background:#E65100">Envahissante</span>');
  if(p)b.push(`<span class="bdg" style="background:#C62828">Protégée G${p[2]}</span>`);
  if(e.team)b.push('<span class="bdg" style="background:#8D6E63">déjà saisie</span>');
+ {const v=e.stl===undefined?envOf(e.n):null;if(v)b.push(`<span class="bdg" style="background:${ICOL[v[3]]||'#E65100'}">Envahissante – impact ${v[3].toLowerCase()}</span>`)}
  return b.join(' ')}
 function line(e){if(e.stl!==undefined)return e.fam.replace(' – ENVAHISSANTE','');return [e.fam,e.ouv===1?(e.ab?'Ouvéa : '+e.ab.toLowerCase():'présente à Ouvéa'):e.ouv===2?'Ouvéa : à confirmer':e.fam&&e.fam!=='saisie équipe'?'pas citée à Ouvéa':''].filter(Boolean).join(' · ')}
 
@@ -80,21 +97,22 @@ function rowOf(box,labelStart){return [...box.querySelectorAll('.row')].find(r=>
 function setSel(box,labelStart,val){const r=rowOf(box,labelStart);const s=r&&r.querySelector('select');if(!s||!val)return;if(![...s.options].some(o=>o.value===val))s.append(h('option',{value:val},val));s.value=val;s.classList.add('auto');setTimeout(()=>s.classList.remove('auto'),1200)}
 function attachAC(inp,kind,box,type,field){
  inp.removeAttribute('list');inp.setAttribute('autocapitalize','off');inp.setAttribute('autocorrect','off');inp.setAttribute('spellcheck','false');
- inp.placeholder=kind==='plantes'?'Tapez les 1res lettres du genre (ex. syz, ficus pro…)':'Tapez les 1res lettres…';
+ inp.placeholder=(kind==='plantes'||kind==='envahissantes')?'Tapez les 1res lettres du genre (ex. syz, ficus pro…)':'Tapez les 1res lettres…';
  const row=inp.closest('.row');row.classList.add('acrow');
  const dd=h('div',{class:'acdd'});const inf=h('div',{class:'acinf'});
  const recent=[...new Map(live(type).sort((a,b)=>a.ts<b.ts?1:-1).map(r=>r[field]).filter(Boolean).map(v=>[norm(v),v])).values()].slice(0,6);
  if(recent.length)row.insertBefore(h('div',{class:'chips'},h('span',{class:'muted'},'Récentes : '),recent.map(v=>h('button',{type:'button',class:'chip',onclick:()=>pick(v)},v))),inp);
  inp.after(dd,inf);
- const apply=n=>{const e=kind==='plantes'?info(n):null;inf.innerHTML='';
+ const PK=kind==='plantes'||kind==='envahissantes';const apply=n=>{const e=PK?(info(n)||(()=>{const v=envOf(n);return v?{n:v[0],fam:v[1],st:'M',ty:'',ouv:1,ab:''}:null})()):null;inf.innerHTML='';
   if(e){inf.innerHTML=badge(e)+' <span class="muted">'+line(e)+'</span>';{const t=fthumb(e.n,84,112,true);if(t){const fv=flu(e.n);inf.prepend(h('div',{class:'fbox'},t,h('div',{class:'muted'},fv[3]?'Noms : '+fv[3]:'','  ',h('a',{href:'#',onclick:ev=>{ev.preventDefault();fzoom(e.n)}},'agrandir'))))}}
    if(e.st)setSel(box,'Statut',ST[e.st]);const ty=TYP(e.ty);if(ty)setSel(box,'Type',ty);
+   {const v=envOf(e.n);if(v)inf.append(h('div',{class:'envw'},`⚠ Plante envahissante – impact ${v[3].toLowerCase()} (Butaud 2014)`+(type!=='eee'?' : la noter aussi en fiche ⚠ Envahissantes.':'')))}
    const p=PROTM.get(norm(e.n));if(p)inf.innerHTML+='<div class="protw">⚠ Espèce protégée : compter tous les pieds (fiche Protégées), GPS et photo, pas de prélèvement.</div>'}
-  else if(kind!=='plantes'){const f=(FAUNE[kind]||[]).find(x=>norm(x[0])===norm(n));if(f)inf.innerHTML=badge({n:f[0],fam:f[1],stl:f[2]})+' <span class="muted">'+f[1].replace(' – ENVAHISSANTE','')+'</span>'}
-  else if(kind==='plantes'&&n.trim()){setSel(box,'Statut','Inconnu (?)');inf.innerHTML='<span class="muted">Nom hors liste Butaud : nom provisoire accepté, statut à vérifier.</span>'}};
+  else if(!PK){const f=(FAUNE[kind]||[]).find(x=>norm(x[0])===norm(n));if(f)inf.innerHTML=badge({n:f[0],fam:f[1],stl:f[2]})+' <span class="muted">'+f[1].replace(' – ENVAHISSANTE','')+'</span>'}
+  else if(PK&&n.trim()){setSel(box,'Statut','Inconnu (?)');inf.innerHTML='<span class="muted">Nom hors liste Butaud : nom provisoire accepté, statut à vérifier.</span>'}};
  const pick=n=>{inp.value=n;dd.innerHTML='';dd.style.display='none';apply(n);inp.dispatchEvent(new Event('input'));inp.blur()};
  const show=()=>{const r=search(kind,inp.value);dd.innerHTML='';if(!r.length||norm(inp.value)===norm(r[0].n)&&r.length===1){dd.style.display='none';return}
-  for(const e of r){const it=h('div',{class:'acit',html:`<div class="actx"><div><b>${e.n.replace(/^(\S+)/,'<i>$1</i>')}</b></div><div class="acsub">${badge(e)} ${line(e)}${kind==='plantes'&&flu(e.n)&&flu(e.n)[3]?'<br><span class="vern">'+flu(e.n)[3]+'</span>':''}</div></div>`});const t=kind==='plantes'?fthumb(e.n,46,61):null;if(t)it.prepend(t);
+  for(const e of r){const it=h('div',{class:'acit',html:`<div class="actx"><div><b>${e.n.replace(/^(\S+)/,'<i>$1</i>')}</b></div><div class="acsub">${badge(e)} ${line(e)}${(kind==='plantes'||kind==='envahissantes')&&flu(e.n)&&flu(e.n)[3]?'<br><span class="vern">'+flu(e.n)[3]+'</span>':''}</div></div>`});const t=(kind==='plantes'||kind==='envahissantes')?fthumb(e.n,46,61):null;if(t)it.prepend(t);
    it.addEventListener('pointerdown',ev=>{ev.preventDefault();pick(e.n)});dd.append(it)}dd.style.display='block'};
  inp.addEventListener('input',e=>{if(e.isTrusted!==false)show()});inp.addEventListener('focus',show);
  inp.addEventListener('blur',()=>setTimeout(()=>{dd.style.display='none';apply(inp.value)},150));
@@ -153,8 +171,27 @@ const _r4=render;render=function(){if(S.tab==='florule'){clearInterval(TICK);V.i
  if(S.tab==='accueil'){const t=V.querySelector('.tiles');if(t)t.append(h('button',{class:'tile',onclick:()=>{S.tab='florule';saveS();render()}},h('div',{class:'tart',style:"background:url('florule/f0.jpg') 0 0/800% 800%"}),h('div',{class:'tcap'},h('b',{},'Florule'),h('span',{class:'who'},'433 plantes en photo, noms locaux'),h('span',{class:'inf'},'Butaud 2014 – Province des Îles'))))}
  if(S.tab==='oiseaux'){const cr=V.querySelector('.hero .credit');if(cr)cr.textContent="Perruche d'Ouvéa sur santal, Gossanah – rapport EEE Province des Îles (Jourdan et al. 2020)"}};
 window.PHOTOS.oiseaux='ill_perruche.jpg';
+
+/* ---- guide des espèces d'Ouvéa ---- */
+const GSEC=[['env','⚠ Plantes envahissantes'],['reptiles','Reptiles'],['fourmis','Fourmis'],['oiseaux','Oiseaux']];
+function vGuide(){const sec=S.gsec||'env';
+ V.append(h('div',{class:'card'},h('h3',{},'📖 Espèces connues à Ouvéa'),h('div',{class:'seg gseg'},GSEC.map(([k,l])=>h('button',{class:sec===k?'on':'',onclick:()=>{S.gsec=k;saveS();render()}},l))),
+  h('p',{class:'muted'},sec==='env'?'46 plantes envahissantes ou potentiellement envahissantes des Loyauté, classées par impact – Butaud 2014, tableaux 14 et 15.':'Espèces recensées à Ouvéa – Jourdan et al. 2020, rapport EEE Province des Îles (IRD/IAC). Toucher une espèce pour voir la fiche.')));
+ const list=h('div',{class:'glist'});V.append(list);
+ if(sec==='env'){const ord=['Très fort','Fort','Moyen à fort','Moyen','Faible à moyen','Faible','Indéterminé'];
+  for(const k of Object.keys(ENV).sort((a,b)=>ord.indexOf(ENV[a][2])-ord.indexOf(ENV[b][2])||a.localeCompare(b))){const v=ENV[k];const fv=flu(k);
+   const row=h('div',{class:'gi',onclick:()=>fv&&fzoom(k)},fthumb(k,54,72)||h('div',{class:'fth nop'},'pas de photo'),h('div',{class:'gt'},h('div',{},h('i',{},h('b',{},k))),h('div',{class:'acsub',html:`<span class="bdg" style="background:${ICOL[v[2]]}">Impact ${v[2].toLowerCase()}</span> ${v[0]} · Ouvéa : ${v[1]?v[1].replace('Adv.','adventice').replace('Nat.','naturalisée').replace('Subsp.','subspontanée').replace('Cult.','cultivée'):'non citée'}`}),fv&&fv[3]?h('div',{class:'vern'},fv[3]):null));list.append(row)}}
+ else for(const f of FAUNE[sec]){list.append(h('div',{class:'gi'},h('div',{class:'gt'},h('div',{},h('b',{},f[0])),h('div',{class:'acsub',html:badge({n:f[0],fam:f[1],stl:f[2]})+' '+f[1].replace(' – ENVAHISSANTE','')}))))}}
+const _r5=render;render=function(){if(S.tab==='guide'){clearInterval(TICK);V.innerHTML='';document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('on'));vGuide();renderStatus();window.scrollTo(0,0);return}
+ _r5();const go=sec=>{S.gsec=sec;S.tab='guide';saveS();render()};
+ if(['reptiles','fourmis','oiseaux'].includes(S.tab)){const b=h('button',{class:'btn2 flbtn',onclick:()=>go(S.tab)},'📖 Espèces connues à Ouvéa (rapport EEE 2020)');const hero=V.querySelector('.hero');hero?hero.after(b):V.prepend(b)}
+ if(S.tab==='florule'){const c=V.querySelector('.card');if(c)c.append(h('button',{class:'btn2',style:'margin-top:8px',onclick:()=>go('env')},'⚠ Plantes envahissantes (46)'))}
+ if(S.tab==='accueil'){const t=V.querySelector('.tiles');if(t)t.append(h('button',{class:'tile',onclick:()=>go('env')},h('div',{class:'tart',style:"background:#FFF3E0;display:flex;align-items:center;justify-content:center;font-size:44px"},'📖'),h('div',{class:'tcap'},h('b',{},'Espèces d’Ouvéa'),h('span',{class:'who'},'Envahissantes, reptiles, fourmis, oiseaux'),h('span',{class:'inf'},'Rapports Butaud 2014 et EEE 2020'))))}};
 /* ---- styles ---- */
-document.head.append(h('style',{},`.fth{flex:none;border-radius:6px;background-repeat:no-repeat;background-color:#eee;border:1px solid #ccc;cursor:pointer}
+document.head.append(h('style',{},`.envw{color:#E65100;font-weight:700;margin-top:4px}.gseg{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.gseg button{border:1px solid #2E7D4F;background:#fff;color:#1F4D33;border-radius:18px;padding:8px 12px;font-size:14px;font-weight:600}.gseg button.on{background:#2E7D4F;color:#fff}
+.gi{display:flex;gap:10px;align-items:center;background:#fff;border:1px solid #E0E6E2;border-radius:10px;padding:8px;margin-bottom:6px}.gt{flex:1;min-width:0}.fth.nop{width:54px;height:72px;font-size:10px;color:#999;display:flex;align-items:center;justify-content:center;text-align:center}
+.sub .eeeb{color:#E65100}.sub .eeeb.on{background:#E65100;color:#fff}
+.fth{flex:none;border-radius:6px;background-repeat:no-repeat;background-color:#eee;border:1px solid #ccc;cursor:pointer}
 .acit{display:flex;gap:10px;align-items:center}.actx{flex:1;min-width:0}.vern{color:#6D4C41;font-style:italic}
 .fbox{display:flex;gap:10px;align-items:flex-start;margin:6px 0}
 .flbtn{width:100%;margin:0 0 12px}.flgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
