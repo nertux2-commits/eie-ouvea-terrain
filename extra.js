@@ -190,9 +190,51 @@ document.head.append(h('style',{},`.mapwrap{position:relative;margin:-4px -4px 6
 .hd figcaption{font-size:12px;color:#555}
 .zoom{flex-direction:column}.zcap{color:#fff;font-size:13px;padding:8px;text-align:center}
 .card.ro{border-color:#1D6F42;background:#EEF7F0}
-nav.tabs button{min-width:54px!important;padding:8px 2px!important;font-size:12px!important}
+nav.tabs{overflow-x:visible!important}nav.tabs button{min-width:0!important;flex:1 1 0!important;padding:7px 0!important;font-size:11px!important;letter-spacing:-.2px}
 .actions select{padding:10px;border-radius:8px;font-size:15px}`));
 
 if(S._carte){delete S._carte;S.tab='carte';saveS()}
 if(S.tab==='carte'||S.tab==='donnees')render();
+})();
+
+/* ---------- Écran d'accueil ---------- */
+(function(){
+const TILES=[
+ ['plantes','Plantes','Jean-Marie ITA (référent) · Georges KAKUE',()=>`${live('espece').length} espèce(s) · ${live('arbre').length} arbre(s) · ${live('jeunes').length} jeune(s) plant(s)`],
+ ['reptiles','Reptiles','Glwadys BAKO',()=>`${live('rep_session').length} session(s) · ${live('rep_obs').length} observation(s)`],
+ ['fourmis','Fourmis','Marvin WAITRONYIE',()=>`${live('fo_poste').length} poste(s) · ${live('fo_obs').length} observation(s)`],
+ ['oiseaux','Oiseaux','Cédric MEAOU',()=>`${live('oi_session').length} matin(s) · ${live('oi_contact').length} contact(s) · ${live('oi_nid').length} nid(s)/cavité(s)`],
+ ['carte','Carte','Points GPS, carrés, ma position',()=>'Fonctionne sans réseau'],
+ ['donnees','Données','Synchro, exports Neodyme, photos HD',()=>{const n=Object.values(R).filter(r=>r.dirty).length;return n?`${n} ligne(s) à envoyer`:'Tout est envoyé'}]];
+const go=t=>{S.tab=t;saveS();clearInterval(TICK);render()};
+function vAccueil(){
+ const pr=(S.obs||'').split(' ')[0];
+ V.append(h('div',{class:'home-head'},h('div',{class:'hh-t'},'État initial – défrichement BESS ENERCAL'),h('div',{class:'hh-s'},'Fajawe, Ouvéa · mission DENV du 10 au 14 novembre 2026'),
+  h('div',{class:'hh-u'},pr&&!RO()?`Bonjour ${pr} — choisissez une rubrique.`:RO()?'Accès Neodyme – consultation seule.':'Commencez par Données › Réglages : votre nom et le code équipe.')));
+ const g=h('div',{class:'tiles'});
+ for(const [t,ti,who,info] of TILES){
+  let art;
+  if(t==='carte')art=h('div',{class:'tart',style:"background:url('carte_ortho.jpg') 42% 50%/260% auto"});
+  else if((window.PHOTOS||{})[t])art=h('div',{class:'tart',style:`background:url('${window.PHOTOS[t]}') center/cover`});
+  else art=h('div',{class:'tart svg',html:(typeof ART!=='undefined'&&ART[t])||''});
+  g.append(h('button',{class:'tile',onclick:()=>go(t)},art,h('div',{class:'tcap'},h('b',{},ti),h('span',{class:'who'},who),h('span',{class:'inf'},info()))));
+ }
+ V.append(g);
+ V.append(h('p',{class:'muted',style:'text-align:center;margin-top:10px'},`Version ${window.APPV} · DENV – Province des Îles Loyauté`));
+}
+const nav=document.querySelector('nav.tabs');
+if(nav&&!nav.querySelector('[data-t="accueil"]')){const b=h('button',{'data-t':'accueil',html:'<span class="tic"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 9.5V21h5v-6h4v6h5V9.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg></span><span>Accueil</span>'});
+ b.onclick=()=>go('accueil');nav.insertBefore(b,nav.firstChild)}
+const hb=document.querySelector('header .top b');if(hb){hb.style.cursor='pointer';hb.onclick=()=>go('accueil')}
+const _r=render;render=function(){if(S.tab!=='accueil')return _r();
+ clearInterval(TICK);V.innerHTML='';document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t==='accueil'));vAccueil();renderStatus();window.scrollTo(0,0)};
+document.head.append(h('style',{},`.home-head{background:linear-gradient(135deg,#1F4D33,#2E7D4F);color:#fff;border-radius:14px;padding:14px 14px 12px;margin-bottom:12px}
+.hh-t{font-size:18px;font-weight:800}.hh-s{font-size:13px;opacity:.9;margin-top:2px}.hh-u{font-size:15px;margin-top:10px;font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}@media(min-width:700px){.tiles{grid-template-columns:repeat(3,1fr)}}
+.tile{padding:0;border:1px solid #D5DCD7;border-radius:14px;background:#fff;overflow:hidden;text-align:left;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.tile:active{transform:scale(.98)}
+.tart{height:96px;background:#EEF4EF}.tart.svg svg{width:100%;height:100%;display:block}
+.tcap{padding:8px 10px 10px;display:flex;flex-direction:column;gap:2px}.tcap b{font-size:17px;color:#1F4D33}
+.tcap .who{font-size:12px;color:#555}.tcap .inf{font-size:12px;color:#2E7D4F;font-weight:600}`));
+if(S._home){delete S._home;S.tab='accueil';saveS();render()}
 })();
