@@ -35,6 +35,11 @@ donnees:['Données','Synchroniser, exporter pour Neodyme, régler son nom et le 
 (function(){
  document.querySelectorAll('nav.tabs button').forEach(b=>{const t=b.dataset.t;if(TABIC[t]&&!b.querySelector('svg'))b.innerHTML=`<span class="tic">${TABIC[t]}</span><span>${b.textContent}</span>`});
  const base=render;
- render=function(){base();const t=S.tab;if(!ART[t])return;const [ti,tx]=HERO[t];const hero=h('div',{class:'hero'},h('div',{class:'art',html:ART[t]}),h('div',{class:'cap'},h('b',{},ti),h('span',{},tx)));V.prepend(hero)};
+ const PH=window.PHOTOS||{};
+ const REF=[['syzygium','Syzygium lifuanum','Endémique Lifou et Ouvéa – rare'],['hunga','Hunga lifouana','Endémique Lifou et Ouvéa – très rare'],['pycnandra','Pycnandra sp. nov.','Endémique Lifou et Ouvéa'],['casearia','Casearia lifuana','Endémique Lifou et Ouvéa']];
+ render=function(){base();const t=S.tab;if(!ART[t])return;const [ti,tx]=HERO[t];
+  const art=PH[t]?h('div',{class:'art photo'},h('img',{src:PH[t],alt:ti}),h('span',{class:'credit'},'Photo DENV – PIL')):h('div',{class:'art',html:ART[t]});
+  const hero=h('div',{class:'hero'},art,h('div',{class:'cap'},h('b',{},ti),h('span',{},tx)));V.prepend(hero);
+  if(t==='plantes'&&S.sub==='protegee'){const g=h('div',{class:'card refs'},h('h3',{},'Espèces prioritaires à reconnaître'),h('div',{class:'refgrid'},REF.filter(r=>PH[r[0]]).map(([k,n,st])=>h('div',{class:'ref'},h('img',{src:PH[k],alt:n,onclick:()=>{const w=h('div',{class:'zoom',onclick:()=>w.remove()},h('img',{src:PH[k]}));document.body.append(w)}}),h('i',{},n),h('span',{},st)))),h('p',{class:'muted'},'Photos DENV – PIL. Liste complète (141 espèces) dans le menu ci-dessous.'));hero.after(g)}};
  render();
 })();

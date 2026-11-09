@@ -1,5 +1,5 @@
-const C='eieterrain-v1.2.0';
-const FILES=['./','index.html','app.js','prot.js','patch.js','ui.js','manifest.webmanifest','icon.svg'];
+const C='eieterrain-v1.4.0';
+const FILES=['./','index.html','app.js','prot.js','patch.js','photos.js','ui.js','extra.js','carte_ortho.jpg','carte_A3.pdf','manifest.webmanifest','icon.svg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>Promise.all(FILES.map(f=>fetch(new Request(f,{cache:'reload'})).then(r=>{if(r.ok)return c.put(f,r)})))).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('eieterrain-')&&k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(u.origin!==location.origin||e.request.method!=='GET')return;

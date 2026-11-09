@@ -54,6 +54,9 @@ textarea{font-family:inherit}
 .hero .cap b{display:block;font-size:20px;color:var(--g)}.hero .cap span{font-size:14px;line-height:1.3;display:block;color:var(--m)}
 nav.tabs button{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:13px}
 .tic svg{width:24px;height:24px;display:block}
+.hero .art.photo{position:relative}.hero .art.photo img{display:block;width:100%;height:auto;aspect-ratio:520/191;object-fit:cover}
+.credit{position:absolute;right:6px;bottom:4px;font-size:10px;color:#fff;background:rgba(0,0,0,.45);padding:1px 5px;border-radius:4px}
+.refgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.ref{display:flex;flex-direction:column;gap:2px;font-size:13px}.ref img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px}.ref i{font-weight:700;color:var(--g)}.ref span{color:var(--m)}
 #toast.show{opacity:1}#toast.err{background:var(--r)}
 </style>
 </head>
@@ -67,10 +70,13 @@ nav.tabs button{display:flex;flex-direction:column;align-items:center;gap:2px;fo
 <main id="view"></main>
 <div id="dls"></div>
 <div id="toast"></div>
-<script>window.APPV='1.2.0';</script>
+<script>window.APPV='1.4.0';</script>
+<script>try{var _s=JSON.parse(localStorage.getItem('eie_state'));if(_s&&_s.tab==='carte'){_s.tab='plantes';_s._carte=1;localStorage.setItem('eie_state',JSON.stringify(_s))}}catch(e){}</script>
 <script src="prot.js"></script>
 <script src="app.js"></script>
 <script src="patch.js"></script>
+<script src="photos.js"></script>
 <script src="ui.js"></script>
+<script src="extra.js"></script>
 </body>
 </html>

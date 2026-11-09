@@ -319,7 +319,7 @@ async function importJSON(e){const f=e.target.files[0];if(!f)return;try{const d=
 async function exportPhotos(){let ph=await pAll();if(S.team&&navigator.onLine&&confirm('Télécharger aussi les photos des collègues depuis le serveur ?')){try{toast('Téléchargement…');const rows=await api('photos?select=id,label,data,ts');const ids=new Set(ph.map(p=>p.id));rows.forEach(r=>{if(!ids.has(r.id))ph.push({id:r.id,label:r.label,data:r.data,ts:r.ts})})}catch(e){toast('Serveur : '+e.message,true)}}
  if(!ph.length){toast('Aucune photo');return}
  const files=ph.map(p=>{const b=atob(p.data.split(',')[1]);const u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return[`${(p.label||'photo').replace(/[^\w.-]+/g,'_')}_${p.id}.jpg`,u]});
- files.push(['photos_index.csv',new TextEncoder().encode('﻿fichier;fiche_liee;etiquette;date\n'+ph.map(p=>`${(p.label||'photo').replace(/[^\w.-]+/g,'_')}_${p.id}.jpg;${p.rec||''};${p.label||''};${p.ts||''}`).join('\n'))]);
+ files.push(['photos_index.csv',new TextEncoder().encode('\ufefffichier;fiche_liee;etiquette;date\n'+ph.map(p=>`${(p.label||'photo').replace(/[^\w.-]+/g,'_')}_${p.id}.jpg;${p.rec||''};${p.label||''};${p.ts||''}`).join('\n'))]);
  await shareOrDownload(new Blob([zip(files)],{type:'application/zip'}),`EIE_Ouvea_photos_${stamp()}.zip`)}
 
 /* --- zip (sans compression) + xlsx minimal --- */
