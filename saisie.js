@@ -94,6 +94,7 @@ function fthumb(n,w,hh,big){const f=flu(n);if(!f){const e=envph(n);if(!e)return 
 function fzoom(n){const f=flu(n);if(!f){const e=envph(n);if(!e)return;const z=h('div',{class:'zoom',onclick:()=>z.remove()},h('img',{src:inatU(e[1],'large'),style:'max-height:75vh'}),h('div',{class:'zcap'},h('b',{},h('i',{},e[0])),h('br'),`Photo : ${e[3]||'anonyme'} (${String(e[2]).toUpperCase()}), iNaturalist – usage interne non commercial`));document.body.append(z);return}const W=Math.min(innerWidth-20,420);
  const z=h('div',{class:'zoom',onclick:()=>z.remove()},fthumb(n,W,W*4/3),h('div',{class:'zcap'},h('b',{},h('i',{},f[0])),h('br'),f[3]?'Noms : '+f[3]:'',h('br'),f[4]+' · '+f[5],h('br'),h('span',{style:'opacity:.7'},'Florule des îles Loyauté – J.-F. Butaud 2014 / Province des Îles')));document.body.append(z)}
 window.fthumb=fthumb;
+window.eieEnvOf=n=>envOf(n);window.eieInfo=n=>info(n);window.eieProt=n=>PROTM.get(norm(n));
 /* ---- champ avec suggestions ---- */
 function rowOf(box,labelStart){return [...box.querySelectorAll('.row')].find(r=>(r.querySelector('.lab')?.textContent||'').startsWith(labelStart))}
 function setSel(box,labelStart,val){const r=rowOf(box,labelStart);const s=r&&r.querySelector('select');if(!s||!val)return;if(![...s.options].some(o=>o.value===val))s.append(h('option',{value:val},val));s.value=val;s.classList.add('auto');setTimeout(()=>s.classList.remove('auto'),1200)}
@@ -106,10 +107,10 @@ function attachAC(inp,kind,box,type,field){
  if(recent.length)row.insertBefore(h('div',{class:'chips'},h('span',{class:'muted'},'Récentes : '),recent.map(v=>h('button',{type:'button',class:'chip',onclick:()=>pick(v)},v))),inp);
  inp.after(dd,inf);
  const PK=kind==='plantes'||kind==='envahissantes';const apply=n=>{const e=PK?(info(n)||(()=>{const v=envOf(n);return v?{n:v[0],fam:v[1],st:'M',ty:'',ouv:1,ab:''}:null})()):null;inf.innerHTML='';
-  if(e){inf.innerHTML=badge(e)+' <span class="muted">'+line(e)+'</span>';{const t=fthumb(e.n,84,112,true);if(t){const fv=flu(e.n);inf.prepend(h('div',{class:'fbox'},t,h('div',{class:'muted'},fv[3]?'Noms : '+fv[3]:'','  ',h('a',{href:'#',onclick:ev=>{ev.preventDefault();fzoom(e.n)}},'agrandir'))))}}
+  if(e){inf.innerHTML=badge(e)+' <span class="muted">'+line(e)+'</span>';{const t=fthumb(e.n,84,112,true);if(t){const fv=flu(e.n)||[];inf.prepend(h('div',{class:'fbox'},t,h('div',{class:'muted'},fv[3]?'Noms : '+fv[3]:'','  ',h('a',{href:'#',onclick:ev=>{ev.preventDefault();fzoom(e.n)}},'agrandir'))))}}
    if(e.st)setSel(box,'Statut',ST[e.st]);const ty=TYP(e.ty);if(ty)setSel(box,'Type',ty);
-   {const v=envOf(e.n);if(v)inf.append(h('div',{class:'envw'},`⚠ Plante envahissante – impact ${v[3].toLowerCase()} (Butaud 2014)`+(type!=='eee'?' : la noter aussi en fiche ⚠ Envahissantes.':'')))}
-   const p=PROTM.get(norm(e.n));if(p)inf.innerHTML+='<div class="protw">⚠ Espèce protégée : compter tous les pieds (fiche Protégées), GPS et photo, pas de prélèvement.</div>'}
+   {const v=envOf(e.n);if(v)inf.append(h('div',{class:'envw'},`⚠ Plante envahissante – impact ${v[3].toLowerCase()} (Butaud 2014)`))}
+   }
   else if(!PK){const f=(FAUNE[kind]||[]).find(x=>norm(x[0])===norm(n));if(f)inf.innerHTML=badge({n:f[0],fam:f[1],stl:f[2]})+' <span class="muted">'+f[1].replace(' – ENVAHISSANTE','')+'</span>'}
   else if(PK&&n.trim()){setSel(box,'Statut','Inconnu (?)');inf.innerHTML='<span class="muted">Nom hors liste Butaud : nom provisoire accepté, statut à vérifier.</span>'}};
  const pick=n=>{inp.value=n;dd.innerHTML='';dd.style.display='none';apply(n);inp.dispatchEvent(new Event('input'));inp.blur()};
@@ -122,7 +123,7 @@ function attachAC(inp,kind,box,type,field){
 }
 
 /* ---- formulaires allégés ---- */
-const OPTK={espece:['herbier','photos','remarque'],arbre:['tige','mode_h','etat','gps','photos','remarque'],jeunes:['broute','herbier','photos'],herbier:['gps','photos','remarque'],
+const OPTK={espece:['herbier','remarque'],arbre:['tige','mode_h','etat','gps','photos','remarque'],jeunes:['broute','herbier','photos'],herbier:['gps','photos','remarque'],
  protegee:['remarque'],rep_obs:['hauteur','gps','photos','remarque'],fo_obs:['tube','photos','remarque'],oi_contact:['remarque'],oi_nid:['entree','orientation','gps','photos','remarque']};
 const KIND={plantes:['espece','arbre','jeunes','herbier','oi_nid'],reptiles:['rep_obs'],fourmis:['fo_obs'],oiseaux:['oi_contact','oi_nid']};
 let LASTSAVE=0;

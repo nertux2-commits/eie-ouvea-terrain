@@ -32,7 +32,7 @@ const mm=p=>Math.cos(p)/Math.sqrt(1-E*E*Math.sin(p)**2),tt=p=>Math.tan(Math.PI/4
 const P1=-20.666666666667*RD,P2=-22.333333333333*RD,P0=-21.5*RD,L0=166*RD;
 const NN=(Math.log(mm(P1))-Math.log(mm(P2)))/(Math.log(tt(P1))-Math.log(tt(P2))),FF=mm(P1)/(NN*Math.pow(tt(P1),NN)),R0=A*FF*Math.pow(tt(P0),NN);
 function lambert(lat,lon){const r=A*FF*Math.pow(tt(lat*RD),NN),th=NN*(lon*RD-L0);return[400000+r*Math.sin(th),300000+R0-r*Math.cos(th)]}
-window.lambertNC=lambert;
+window.lambertNC=lambert;window.EIE_CARTE=CARTE;
 
 let WID=null,ME=null;
 function stopGPS(){if(WID!=null&&navigator.geolocation){navigator.geolocation.clearWatch(WID)}WID=null}

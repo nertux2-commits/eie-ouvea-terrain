@@ -20,6 +20,46 @@ function welcome(){if(document.querySelector('.welcome'))return;
   /NEODYME/.test(S.team||'')?h('button',{class:'btn2',onclick:()=>done('Neodyme (consultation)')},'Je suis Neodyme (consultation)'):null));
  document.body.append(w)}
 
+
+/* ---------- fiche 1 : protégées, envahissantes et herbier traités dans la liste du quart ---------- */
+{const f=SCH.espece.f;const i=f.findIndex(x=>x[0]==='statut');
+ if(!f.some(x=>x[0]==='nb_pieds'))f.splice(i+1,0,['nb_pieds','Espèce protégée : nombre de pieds dans le quart','cnt'],['stade_p','Stade des pieds protégés','sel',['','Adultes (tour ≥ 15 cm)','Jeunes (tour < 15 cm)','Adultes et jeunes']],['gps','Point GPS du ou des pieds protégés','gps']);}
+const rowBy=(box,start)=>[...box.querySelectorAll('.row')].find(r=>(r.querySelector('.lab')?.textContent||'').startsWith(start));
+const _f2=form;form=function(type,ctx,editId,after){const box=_f2(type,ctx,editId,after);if(type!=='espece')return box;
+ const inp=box.querySelector('.acrow input[type=text]');if(!inp)return box;
+ const pr=['Espèce protégée','Stade des pieds','Point GPS du'].map(t=>rowBy(box,t)).filter(Boolean);
+ const herbRow=rowBy(box,'N° herbier');const herbIn=herbRow&&herbRow.querySelector('input');
+ const tip=h('div',{class:'tip'});inp.closest('.row').after(tip);
+ const upd=()=>{const n=inp.value.trim();tip.innerHTML='';tip.className='tip';pr.forEach(r=>r.style.display='none');if(!n)return;
+  const P=window.eieProt&&eieProt(n),E=window.eieEnvOf&&eieEnvOf(n),I=window.eieInfo&&eieInfo(n);
+  const unk=!I&&!E||/Inconnu/.test(rowBy(box,'Statut')?.querySelector('select')?.value||'');const enj=P||(I&&(I.st==='L'||I.st==='N'));
+  const ST={L:'endémique des Loyauté',N:'endémique de Nouvelle-Calédonie',I:'indigène',A:'introduite ancienne',M:'introduite moderne'};
+  const facts=[];if(I){facts.push((I.fam||'')+(I.st?' · '+ST[I.st]:''));if(I.ab)facts.push('Ouvéa (Butaud 2014) : '+I.ab.toLowerCase())}
+  if(P)facts.push(`Espèce protégée – groupe ${P[2]} : ${GROUPES[P[2]]}${P[3]?' ('+P[3].toLowerCase()+')':''}`);
+  if(E)facts.push(`Envahissante – impact ${String(E[3]).toLowerCase()} (Butaud 2014)`);
+  if(P){pr.forEach(r=>r.style.display='');tip.classList.add('tp');tip.append(h('b',{},'🛡 Espèce protégée'),h('div',{},'Compter tous les pieds dans le quart, point GPS, photo par Glwadys.'))}
+  else if(E){tip.classList.add('te');tip.append(h('b',{},'⚠ Plante envahissante'),h('div',{},'Le code par étage suffit (c’est son recouvrement). Une photo par carré.'))}
+  else if(unk){tip.classList.add('tu');tip.append(h('b',{},'🌿 Espèce non identifiée'),h('div',{},'Nom provisoire (ex. « Myrtaceae sp. 1 »), échantillon d’herbier obligatoire, photo en place avant de couper.'))}
+  else if(enj){tip.classList.add('tk');tip.append(h('b',{},'⭐ Espèce à enjeu'),h('div',{},'Endémique : un échantillon pour l’herbier LOY est conseillé, à la discrétion de Jean-Marie.'))}
+  if(facts.length)tip.append(h('div',{class:'facts'},facts.map(f=>h('div',{},'• '+f))));
+  const has=herbIn&&herbIn.value;
+  if(has)tip.append(h('div',{class:'hn'},'🌿 Échantillon ',h('b',{},herbIn.value),' – à écrire au crayon sur l’étiquette.',h('button',{type:'button',class:'linkb',onclick:()=>{herbIn.value='';upd()}},'annuler')));
+  else if(herbIn)tip.append(h('button',{type:'button',class:unk||enj?'btn2':'linkb',onclick:()=>{if(P&&!confirm('Espèce protégée : prélever seulement si Jean-Marie le décide (un seul rameau, spécimen de référence). Continuer ?'))return;herbIn.value=nextHerb();upd()}},unk?'🌿 Prélever l’échantillon (donner un n°)':enj?'🌿 Prélever pour l’herbier LOY':'🌿 Prélever quand même pour l’herbier'));
+  if(!tip.className.includes('t')||tip.className==='tip')tip.classList.add('tn')};
+ inp.addEventListener('input',()=>setTimeout(upd,60));inp.addEventListener('blur',()=>setTimeout(upd,250));setTimeout(upd,50);
+ return box};
+{const _al=window.alert;window.alert=m=>{if(/^Espèce PROTÉGÉE/.test(String(m)))return;_al(m)}}
+// copie automatique vers les fiches 5 (protégées), 6 (envahissantes) et 4 (herbier) pour l'export Neodyme
+const CODEV={'':0,'r':1,'+':2,'1':3,'2':4,'3':5,'4':6,'5':7};
+const _p3=put;put=function(rec){const r=_p3(rec);if(!rec||rec.type!=='espece')return r;
+ const mirror=(id,type,data,keep)=>{const ex=R[id];if(!keep){if(ex&&!ex.deleted){ex.deleted=true;_p3(ex)}return}
+  const m=Object.assign(ex&&!ex.deleted?ex:{id,type,ts:rec.ts,date:rec.date,obs:rec.obs,dev:rec.dev},data,{deleted:false,auto:'fiche 1'});_p3(m)};
+ const P=window.eieProt&&eieProt(rec.espece),E=window.eieEnvOf&&eieEnvOf(rec.espece);const dead=!!rec.deleted;
+ mirror('p_'+rec.id,'protegee',{espece:P?P[0]:rec.espece,carre:rec.carre,quart:rec.quart,nombre:rec.nb_pieds||'',stade:rec.stade_p||'',lat:rec.lat,lon:rec.lon,prec:rec.prec,photos:rec.photos||[],remarque:rec.remarque||''},!dead&&!!P);
+ const best=['code_0_1','code_1_5','code_5'].map(k=>rec[k]||'').sort((a,b)=>CODEV[b]-CODEV[a])[0];
+ mirror('e_'+rec.id,'eee',{espece:rec.espece,carre:rec.carre,quart:rec.quart,recouvrement:best,photos:rec.photos||[],remarque:rec.remarque||''},!dead&&!!E);
+ mirror('h_'+rec.id,'herbier',{num:rec.herbier,nom:rec.espece,carre:rec.carre,quart:rec.quart,photos:rec.photos||[],remarque:rec.remarque||''},!dead&&!!rec.herbier&&!live('herbier').some(x=>x.num===rec.herbier&&x.id!=='h_'+rec.id));
+ return r};
 /* ---------- étapes cochées (partagées avec l'équipe) ---------- */
 const isDone=k=>live('etape').some(r=>r.key===k&&r.done);
 function setDone(k,v){let r=live('etape').find(x=>x.key===k);if(!r)r=newRec('etape',{key:k});r.done=v;put(r)}
@@ -38,13 +78,13 @@ const PLAN=[
  ['2026-11-11','19 h – 20 h 30','Glwadys,Marvin','Reptiles de nuit n° 2','reptiles'],
  ['2026-11-12','6 h 30','Cédric','Oiseaux : passage 2 (6 h 30, même heure que la veille)','oiseaux'],
  ['2026-11-12','7 h 30 – 12 h','Georges,Jean-Marie,Glwadys,Cédric','Plantes : carré M3','plantes:M3'],
- ['2026-11-12','8 h – 10 h 30','Marvin','Fourmis : poste F4 (centre de P1), puis plantes M3','fourmis'],
+ ['2026-11-12','8 h – 10 h 30','Marvin','Fourmis : poste F4 (centre de P1)','fourmis'],
+ ['2026-11-12','10 h 30 – 11 h 30','Glwadys,Marvin','Reptiles de jour (soleil), puis plantes M3','reptiles'],
  ['2026-11-12','13 h – 17 h','Tous','Plantes : placette témoin P1','plantes:P1'],
  ['2026-11-12','17 h 30 – 18 h 30','Tous','Contrôle des saisies','donnees'],
  ['2026-11-12','19 h – 20 h 30','Glwadys,Marvin','Réserve : reptiles de nuit seulement si une nuit a été annulée (pluie)','reptiles'],
- ['2026-11-13','7 h 30 – 8 h 30','Glwadys,Marvin','Reptiles de jour','reptiles'],
- ['2026-11-13','8 h 30 – 12 h','Tous','Compléments : arbres oubliés, espèces protégées, herbier, photos manquantes','plantes'],
- ['2026-11-13','Après-midi','Tous','Contrôle final, synchronisation, nettoyage du matériel (biosécurité)','donnees'],
+ ['2026-11-13','Matin','Tous','Libre (pas de terrain)',null],
+ ['2026-11-13','Après-midi','Tous','Contrôle final, compléments si besoin (arbres, herbier, photos), synchronisation, nettoyage du matériel (biosécurité)','donnees'],
  ['2026-11-14','Matin','Tous','Retour à Lifou',null]];
 const DAYS=[['2026-11-10','Mar 10'],['2026-11-11','Mer 11'],['2026-11-12','Jeu 12'],['2026-11-13','Ven 13'],['2026-11-14','Sam 14']];
 const isoToday=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1,2)}-${pad(d.getDate(),2)}`};
@@ -97,13 +137,11 @@ const spLink=sec=>h('button',{class:'linkb',onclick:()=>{S.gsec=sec;S.tab='guide
 
 function plantSteps(c){const cnt=t=>live(t).filter(r=>r.carre===c).length;
  return [
-  {k:'desc',t:'Décrire le carré',x:'Fiche 0 : type de végétation, hauteur de la canopée au télémètre, ouverture du couvert, sol, épaisseur de litière au centre et aux 4 coins, traces (coupe, feu, cochons, cerfs, déchets). Photos des 4 coins et du centre.',done:live('carre').some(r=>r.carre===c),go:()=>{S.sub='carre'}},
-  {k:'esp',t:'Liste des espèces, quart par quart',x:'Fiche 1 : parcourir le quart en allers-retours tous les 2 à 3 m. Une ligne par espèce, avec un code par étage (0–1 m, 1–5 m, > 5 m). Tapez les 1res lettres : l’appli propose le nom et remplit le statut. Quand le quart est fini, cochez-le ci-dessous.',done:['a','b','c','d'].every(q=>isDone(`esp_${c}${q}`)),c:`${cnt('espece')} lignes`,go:()=>{S.sub='espece';S.quart=['a','b','c','d'].find(q=>!isDone(`esp_${c}${q}`))||S.quart},gl:'Saisir les espèces ↓',quarts:true},
-  {k:'arb',t:'Arbres de 15 cm de tour et plus',x:'Fiche 2 : étiquette numérotée sur chaque arbre, tour à 1,30 m au mètre-ruban, hauteur au télémètre si le numéro finit par 0 ou 5. Le numéro suivant est proposé tout seul.',done:isDone('arb_'+c),man:'arb_'+c,c:`${cnt('arbre')} arbres`,go:()=>{S.sub='arbre'}},
+  {k:'desc',t:'Décrire le carré + photos des coins',x:'Fiche 0 : type de végétation, hauteur de la canopée au télémètre, ouverture du couvert, sol, épaisseur des feuilles mortes au sol (litière) au centre et aux 4 coins, traces (coupe, feu, cochons, cerfs, déchets). 📷 Glwadys : une photo de chaque coin vers le centre, et une du centre.',done:live('carre').some(r=>r.carre===c),go:()=>{S.sub='carre'}},
+  {k:'esp',t:'Toutes les espèces, quart par quart',x:'Fiche 1 : parcourir le quart en allers-retours tous les 2 à 3 m et noter TOUTES les espèces, avec un code par étage (0–1 m, 1–5 m, > 5 m). L’appli reconnaît le nom et vous dit quoi faire : 🛡 protégée → compter les pieds, GPS, photo, pas de prélèvement ; ⚠ envahissante → le code suffit, une photo par carré ; 🌿 non identifiée → nom provisoire, échantillon d’herbier (n° LOY donné par l’appli) et photo avant de couper ; ⭐ endémique → échantillon conseillé, au choix de Jean-Marie.',done:['a','b','c','d'].every(q=>isDone(`esp_${c}${q}`)),c:`${cnt('espece')} lignes`,go:()=>{S.sub='espece';S.quart=['a','b','c','d'].find(q=>!isDone(`esp_${c}${q}`))||S.quart},gl:'Saisir les espèces ↓',quarts:true},
+  {k:'arb',t:'Arbres de 15 cm de tour et plus',x:'Fiche 2 : étiquette numérotée sur chaque arbre, tour à 1,30 m au mètre-ruban, hauteur au télémètre si le numéro finit par 0 ou 5. Le numéro suivant est proposé tout seul. 📷 Photo seulement si l’arbre est douteux ou remarquable (cavité, protégé).',done:isDone('arb_'+c),man:'arb_'+c,c:`${cnt('arbre')} arbres`,go:()=>{S.sub='arbre'}},
   {k:'jeu',t:'Jeunes plants – petit carré 5 × 5 m en haut à droite',x:'Fiche 3 : dans le petit carré du coin nord-est seulement. Compter les plantules (< 50 cm), jeunes plants (50 cm – 1,30 m) et gaules (> 1,30 m, tour < 15 cm) de chaque espèce d’arbre ou d’arbuste.',done:isDone('jeu_'+c),man:'jeu_'+c,c:`${cnt('jeunes')} espèces`,go:()=>{S.sub='jeunes'}},
-  {k:'pro',t:'Espèces protégées : tous les pieds',x:'Fiche 5 : compter tous les pieds de chaque espèce protégée vue dans le carré, point GPS et photo. Aucun prélèvement.',done:isDone('pro_'+c),man:'pro_'+c,c:`${cnt('protegee')} lignes`,go:()=>{S.sub='protegee'}},
-  {k:'eee',t:'Plantes envahissantes',x:'Fiche 6 : noter chaque plante envahissante vue dans le quart (recouvrement, stade, surface). Les envahissantes de la liste Butaud sont proposées en premier, avec photo.',done:isDone('eee_'+c),man:'eee_'+c,c:`${cnt('eee')} lignes`,go:()=>{S.sub='eee'}},
-  {k:'her',t:'Herbier',x:'Fiche 4 : un échantillon pour chaque espèce non identifiée sur place (avec fleurs ou fruits si possible). Le numéro JMI-xxx est donné par l’appli : l’écrire au crayon sur l’étiquette de l’échantillon.',done:isDone('her_'+c),man:'her_'+c,c:`${live('herbier').filter(r=>r.carre===c).length} échantillons`,go:()=>{S.sub='herbier'}}]}
+  {k:'ctl',t:'Contrôle avant de quitter le carré',x:'Vérifier ensemble : chaque espèce non identifiée (et chaque espèce à enjeu choisie par Jean-Marie) a un n° d’herbier LOY ET son échantillon étiqueté au crayon ; chaque espèce protégée a son nombre de pieds, son GPS et sa photo ; les photos des coins sont faites. Glwadys : noter le carré sur l’ardoise avant chaque série de photos.',done:isDone('ctl_'+c),man:'ctl_'+c,c:`${live('herbier').filter(r=>r.carre===c).length} échantillon(s)`,go:()=>{S.sub='herbier'},gl:'Voir le registre d’herbier ↓'}]}
 function guidePlantes(){
  const c=S.carre;const steps=plantSteps(c);
  const carres=h('div',{class:'seg carsel'},['M1','M2','M3','P1'].map(k=>{const ss=plantSteps(k);const n=ss.filter(s=>s.done).length;return h('button',{class:S.carre===k?'on':'',onclick:()=>{S.carre=k;S.stepOpen='';saveS();render()}},`${k} ${n===ss.length?'✔':n+'/'+ss.length}`)}));
@@ -114,11 +152,11 @@ function guidePlantes(){
  return st}
 function guideReptiles(){const s=R[S.rep];const ok=s&&!s.deleted;
  const steps=[
-  {k:'r1',t:'Créer la session',x:'Nuit : mardi et mercredi, 19 h – 20 h 30 (coucher du soleil ≈ 18 h 08, on démarre au moins 30 min après), 1 h 30 de recherche, fin avant 20 h 30. Jour : vendredi 7 h 30 – 8 h 30, temps ensoleillé. Toujours à deux. Noter la température et la météo ; pas de session sous forte pluie.',done:ok,go:()=>{setTimeout(()=>[...document.querySelectorAll('.workarea button')].find(b=>/Nouvelle/.test(b.textContent))?.click(),200)},gl:'+ Nouvelle session ↓'},
+  {k:'r1',t:'Créer la session',x:'Nuit : mardi et mercredi, 19 h – 20 h 30 (coucher du soleil ≈ 18 h 08, on démarre au moins 30 min après), 1 h 30 de recherche, fin avant 20 h 30. Jour : jeudi 10 h 30 – 11 h 30, temps ensoleillé, 1 h de recherche. Toujours à deux. Noter la température et la météo ; pas de session sous forte pluie.',done:ok,go:()=>{setTimeout(()=>[...document.querySelectorAll('.workarea button')].find(b=>/Nouvelle/.test(b.textContent))?.click(),200)},gl:'+ Nouvelle session ↓'},
   {k:'r2',t:'Démarrer le chrono',x:'Au début de la bande de 5 m : toucher « Démarrer ». Le chrono compte le temps de recherche effectif.',done:ok&&!!s.debut,gl:'Aller au chrono ↓',go:()=>{}},
   {k:'r3',t:'Chercher et noter chaque reptile',x:'Avancer lentement côte à côte : troncs, branches basses, feuillage, litière, blocs coralliens. La nuit, les yeux des geckos brillent à la frontale. Pour chaque reptile : « Reptile vu » (le chrono se met en pause), photo par Glwadys.',done:ok&&live('rep_obs').some(r=>r.session===s.id),c:ok?`${live('rep_obs').filter(r=>r.session===s.id).length} reptile(s)`:'',gl:'Reptile vu ↓',go:()=>{setTimeout(()=>document.querySelector('.workarea .btn.big')?.click(),200)}},
   {k:'r4',t:'Terminer la session',x:'Après 1 h 30 de recherche la nuit (fin avant 20 h 30), 1 h de jour : « Terminer ». L’heure de fin et la durée sont enregistrées.',done:ok&&!!s.fin,gl:'Aller au chrono ↓',go:()=>{}}];
- const ses=[['Nuit','Nuit n° 1 (mar.)'],['Nuit','Nuit n° 2 (mer.)'],['Jour','Jour (ven.)']];const all=live('rep_session').sort((a,b)=>a.ts<b.ts?-1:1);
+ const ses=[['Nuit','Nuit n° 1 (mar.)'],['Nuit','Nuit n° 2 (mer.)'],['Jour','Jour (jeu.)']];const all=live('rep_session').sort((a,b)=>a.ts<b.ts?-1:1);
  const sum=h('div',{class:'muted'},'Sessions prévues : '+ses.map(([j,l],i)=>{const x=all.filter(z=>z.jour_nuit===j)[j==='Nuit'?i:0];return `${l} ${x&&x.fin?'✔':x?'⏳':'○'}`}).join(' · '));
  return stepper('Méthode – reptiles',steps,sum,h('div',{class:'stfoot'},spLink('reptiles')))}
 function guideFourmis(){const s=R[S.fo];const ok=s&&!s.deleted;const p=ok?s.poste:(S.poste||'F1');const el=ok&&s.t0?Date.now()-Date.parse(s.t0):0;
@@ -151,6 +189,7 @@ const _r=render;render=function(){
  if(S.tab==='plantes'&&!['espece','arbre','jeunes','protegee','herbier','carre','eee'].includes(S.sub))S.sub='espece';
  if(S.tab==='plantes'&&!['M1','M2','M3','P1'].includes(S.carre))S.carre='M1';
  const y=window.scrollY;_r();
+ if(S.tab==='plantes')V.querySelectorAll('.sub button').forEach(b=>{if(/Protégées|Envahissantes/.test(b.textContent))b.remove()});
  if(G[S.tab]){V.querySelectorAll('.flbtn').forEach(e=>{if(!/Florule/.test(e.textContent))e.remove()});
   const hero=V.querySelector('.hero');const kids=[...V.children].filter(e=>e!==hero);const wa=h('div',{class:'workarea'},h('div',{class:'wah'},'✍ Saisie'));kids.forEach(e=>wa.append(e));
   const st=G[S.tab]();if(hero)hero.after(st);else V.prepend(st);V.append(wa);
@@ -166,6 +205,7 @@ document.head.append(h('style',{},`.welcome{position:fixed;inset:0;z-index:60;ba
 .today .task{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:center;padding:10px 0;border-bottom:1px solid #EEF2EF}.task .tt{font-weight:800;color:#2E7D4F;font-size:14px;white-space:nowrap}.task .tx{font-size:15px}.task button{grid-column:1/3;justify-self:start;padding:8px 14px!important;font-size:15px!important}
 .task.now{background:#FFF8E1;margin:0 -12px;padding:10px 12px;border-left:5px solid #F9A825}
 .thd{display:flex;justify-content:space-between;align-items:center;gap:8px}.tog{margin:0!important}.tog button{padding:6px 10px!important;font-size:13px!important}.task .twho{font-size:12px;color:#6D7F73;margin-top:2px}.task.other .tx{color:#37474F}
+.tip{border-radius:10px;padding:8px 10px;margin:-2px 0 8px;font-size:14px;line-height:1.4}.tip:empty{display:none}.tip b{display:block;margin-bottom:2px}.tip.tp{background:#FFEBEE;color:#B71C1C}.tip.te{background:#FFF3E0;color:#BF360C}.tip.tu{background:#E3F2FD;color:#0D47A1}.tip.tk{background:#E8F5E9;color:#1B5E20}.tip.tn{background:#F5F5F5;color:#37474F}.tip .facts{margin-top:4px;font-size:13px;opacity:.9}.tip .btn2{margin-top:6px}.tip .hn{margin-top:6px;font-weight:700}
 .daychips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 6px}.daychips button{border:1px solid #2E7D4F;background:#fff;border-radius:16px;padding:6px 10px;font-weight:600;color:#1F4D33}.daychips button.on{background:#2E7D4F;color:#fff}
 .bigtiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}.bt{border:0;padding:0;border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.15);text-align:left}
 .bimg{height:86px;background:#DDE8E0 center/cover}.bl{padding:8px 10px}.bl b{display:block;font-size:19px;color:#1F4D33}.bl span{font-size:12.5px;color:#2E7D4F;font-weight:600}

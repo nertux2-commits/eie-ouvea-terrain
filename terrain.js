@@ -54,7 +54,7 @@ if(top&&!top.querySelector('.notebtn')){const st=$('#st');const b=h('button',{cl
  const m=h('button',{class:'notebtn',title:'Mémo vocal rapide',onclick:()=>{if(S.tab!=='carnet')S.prevTab=S.tab;quickVoice()}},'🎙');const w=h('span',{class:'hbtns'},m,b);st.after(w)}
 
 /* ---------- Préparation du téléphone ---------- */
-const NEED=['index.html','app.js','prot.js','patch.js','photos.js','ui.js','extra.js','flore.js','florule.js','saisie.js','terrain.js','guide.js','carte_ortho.jpg','carte_A3.pdf','ill_perruche.jpg',...[0,1,2,3,4,5,6].map(i=>'florule/f'+i+'.jpg')];
+const NEED=['index.html','app.js','prot.js','patch.js','photos.js','ui.js','extra.js','flore.js','florule.js','saisie.js','terrain.js','guide.js','gps.js','chrono.js','carte_ortho.jpg','carte_A3.pdf','ill_perruche.jpg',...[0,1,2,3,4,5,6].map(i=>'florule/f'+i+'.jpg')];
 let DEFER=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();DEFER=e;if(S.tab==='accueil')render()});
 const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent);
