@@ -7,6 +7,8 @@ const ROLES={'Georges KAKUE':'Encadrement, piquetage, flore','Jean-Marie ITA':'B
 /* ---------- code équipe transmis par le lien (…/#OUVEA-XXXX) ---------- */
 {const m=location.hash.match(/^#((?:OUVEA|NEODYME)-[A-Z0-9]+)/i);if(m){S.team=m[1].toUpperCase();saveS();try{history.replaceState(null,'',location.pathname)}catch(e){}}}
 
+/* ---------- code équipe intégré : rien à taper ---------- */
+if(!S.team){S.team='OUVEA-D5DC1E';saveS()}
 /* ---------- 1er lancement : prénom ---------- */
 function welcome(){if(document.querySelector('.welcome'))return;
  const other=h('input',{type:'text',placeholder:'Autre prénom et nom'});const code=h('input',{type:'text',placeholder:'Code équipe (reçu par message)',value:S.team||'',autocapitalize:'characters'});
@@ -15,7 +17,6 @@ function welcome(){if(document.querySelector('.welcome'))return;
  const w=h('div',{class:'welcome'},h('div',{class:'wbox'},h('div',{class:'wt'},'Bienvenue 👋'),h('p',{},'Ce téléphone est à qui ? (une seule fois : votre nom sera ajouté à toutes vos saisies)'),
   h('div',{class:'wppl'},PEOPLE.filter(p=>!/Neodyme/.test(p)).map(p=>h('button',{class:'wp',onclick:()=>done(p)},h('b',{},PREN(p)),h('span',{},ROLES[p]||'')))),
   h('div',{class:'row'},other,h('button',{class:'btn2',style:'margin-top:6px',onclick:()=>done(other.value)},'Valider ce nom')),
-  S.team?null:h('div',{class:'row'},h('span',{class:'lab'},'Code équipe'),code),
   /NEODYME/.test(S.team||'')?h('button',{class:'btn2',onclick:()=>done('Neodyme (consultation)')},'Je suis Neodyme (consultation)'):null));
  document.body.append(w)}
 
