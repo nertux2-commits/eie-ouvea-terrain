@@ -56,12 +56,18 @@ function vAccueil(){
  const td=isoToday();const inMission=DAYS.some(d=>d[0]===td);const day=S.pday&&!inMission?S.pday:(inMission?td:DAYS[1][0]);
  const hr=new Date().getHours()+new Date().getMinutes()/60;
  V.append(h('div',{class:'home-head'},h('div',{class:'hh-t'},`Bonjour ${PREN(S.obs)||''} 👋`),h('div',{class:'hh-s'},'État initial BESS ENERCAL – Fajawe, Ouvéa · 10 au 14 novembre')));
- const tasks=PLAN.filter(p=>p[0]===day&&mine(p));
+ const all=!!S.pall;const tasks=PLAN.filter(p=>p[0]===day&&(all||mine(p)));
  let cur=-1;if(day===td)tasks.forEach((p,i)=>{if(startH(p[1])<=hr)cur=i});
- const card=h('div',{class:'card today'},h('h3',{},day===td?'Aujourd’hui, pour vous':'Votre programme'),
+ const who=p=>p[2]==='Tous'?'toute l’équipe':p[2].replace(/,/g,', ');
+ const card=h('div',{class:'card today'},h('div',{class:'thd'},h('h3',{},day===td?'Aujourd’hui':'Programme'),
+   h('div',{class:'seg tog'},h('button',{class:all?'':'on',onclick:()=>{S.pall=0;saveS();render()}},'Moi'),h('button',{class:all?'on':'',onclick:()=>{S.pall=1;saveS();render()}},'Toute l’équipe'))),
   inMission?null:h('div',{class:'daychips'},DAYS.map(([d,l])=>h('button',{class:d===day?'on':'',onclick:()=>{S.pday=d;saveS();render()}},l))),
-  tasks.length?tasks.map((p,i)=>h('div',{class:'task'+(i===cur?' now':'')},h('div',{class:'tt'},p[1]),h('div',{class:'tx'},p[3]),p[4]?h('button',{class:i===cur?'btn':'btn2',onclick:()=>goTo(p[4])},i===cur?'Commencer →':'Ouvrir'):null)):h('p',{class:'muted'},'Rien de prévu pour vous ce jour-là.'));
+  tasks.length?tasks.map((p,i)=>{const me=mine(p);return h('div',{class:'task'+(i===cur?' now':'')+(me?'':' other')},h('div',{class:'tt'},p[1]),h('div',{class:'tx'},p[3],all||p[2]!=='Tous'?h('div',{class:'twho'},(me?'👤 ':'')+who(p)):null),
+   p[4]?h('button',{class:i===cur&&me?'btn':'btn2',onclick:()=>goTo(p[4])},me?(i===cur?'Commencer →':'Ouvrir'):'Aider →'):null)}):h('p',{class:'muted'},'Rien de prévu ce jour-là.'),
+  h('p',{class:'muted',style:'margin:8px 0 0;font-size:13px'},'Les rôles indiquent qui est responsable, pas qui a le droit : tout le monde peut saisir dans tous les protocoles. Disponible ? Touchez « Toute l’équipe » pour aider là où il y a besoin.'));
  V.append(card);
+ if(day===td&&!all){const now=PLAN.filter(p=>p[0]===td&&!mine(p)&&p[4]&&startH(p[1])<=hr&&hr<startH(p[1])+3);
+  if(now.length)V.append(h('div',{class:'card help2'},h('h3',{},'🤝 En ce moment dans l’équipe'),now.map(p=>h('div',{class:'task other'},h('div',{class:'tt'},p[1]),h('div',{class:'tx'},p[3],h('div',{class:'twho'},who(p))),h('button',{class:'btn2',onclick:()=>goTo(p[4])},'Aider →')))))}
  const prog={plantes:()=>{const n=['M1','M2','M3','P1'].filter(c=>plantSteps(c).every(s=>s.done)).length;return `${n}/4 carrés terminés`},
   reptiles:()=>`${live('rep_session').filter(s=>s.fin).length}/3 sessions · ${live('rep_obs').length} reptile(s)`,
   fourmis:()=>`${['F1','F2','F3','F4'].filter(p=>isDone('fo_tub_'+p)).length}/4 postes terminés`,
@@ -158,6 +164,7 @@ document.head.append(h('style',{},`.welcome{position:fixed;inset:0;z-index:60;ba
 .wppl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.wp{border:2px solid #2E7D4F;background:#EEF7F0;border-radius:12px;padding:12px 8px;text-align:left}.wp b{display:block;font-size:18px;color:#1F4D33}.wp span{font-size:12px;color:#555}
 .today .task{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:center;padding:10px 0;border-bottom:1px solid #EEF2EF}.task .tt{font-weight:800;color:#2E7D4F;font-size:14px;white-space:nowrap}.task .tx{font-size:15px}.task button{grid-column:1/3;justify-self:start;padding:8px 14px!important;font-size:15px!important}
 .task.now{background:#FFF8E1;margin:0 -12px;padding:10px 12px;border-left:5px solid #F9A825}
+.thd{display:flex;justify-content:space-between;align-items:center;gap:8px}.tog{margin:0!important}.tog button{padding:6px 10px!important;font-size:13px!important}.task .twho{font-size:12px;color:#6D7F73;margin-top:2px}.task.other .tx{color:#37474F}
 .daychips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 6px}.daychips button{border:1px solid #2E7D4F;background:#fff;border-radius:16px;padding:6px 10px;font-weight:600;color:#1F4D33}.daychips button.on{background:#2E7D4F;color:#fff}
 .bigtiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}.bt{border:0;padding:0;border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.15);text-align:left}
 .bimg{height:86px;background:#DDE8E0 center/cover}.bl{padding:8px 10px}.bl b{display:block;font-size:19px;color:#1F4D33}.bl span{font-size:12.5px;color:#2E7D4F;font-weight:600}
