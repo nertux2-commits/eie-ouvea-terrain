@@ -39,6 +39,18 @@ function draw(){const a=active();bar.innerHTML='';bar.style.display=a.length?'':
   bar.append(h('div',{class:'chb '+k,onclick:()=>{S.tab=go;if(k==='rep')S.rep=s.id;if(k==='oi')S.oi=s.id;if(k!=='rep'&&k!=='oi'){S.fo=s.id;S.poste=s.poste}saveS();render()}},h('span',{class:'cl'},lab),h('span',{class:'ct'},txt),...btns))}}
 setInterval(draw,1000);draw();
 
+
+/* ---------- corriger une saisie, même longtemps après ---------- */
+const ETYPES=[['rep_obs','Reptiles'],['oi_contact','Oiseaux (contacts)'],['oi_nid','Nids et cavités'],['fo_obs','Fourmis'],['espece','Plantes – espèces'],['arbre','Arbres'],['jeunes','Jeunes plants'],['herbier','Herbier'],['carre','Description des carrés'],['note','Carnet de notes']];
+function editModal(id,done){const r=R[id];if(!r||!SCH[r.type])return;const m=h('div',{class:'emod'});const close=()=>{m.remove();done&&done()};
+ const f=form(r.type,{},id,close);m.append(h('div',{class:'ebox'},h('div',{class:'ehd'},h('b',{},'✏ Corriger'),h('button',{class:'linkb',onclick:close},'✕ Fermer')),f));document.body.append(m)}
+window.eieEdit=editModal;
+function editCard(){const ty=S.etype||'rep_obs';const mine=S.emine!==0;
+ const sel=h('select',{onchange:e=>{S.etype=e.target.value;saveS();render()}},ETYPES.map(([k,l])=>h('option',{value:k,selected:k===ty},`${l} (${live(k).length})`)));
+ const tog=h('label',{class:'row chk'},h('input',{type:'checkbox',checked:mine,onchange:e=>{S.emine=e.target.checked?1:0;saveS();render()}}),h('span',{class:'lab'},'Seulement mes saisies'));
+ const rows=live(ty).filter(r=>!mine||r.obs===S.obs).sort((a,b)=>a.ts<b.ts?1:-1).slice(0,80);
+ const list=h('div',{},rows.length?rows.map(r=>h('div',{class:'li',onclick:()=>editModal(r.id,render)},h('span',{},`${r.date||''} ${hhmm(r.ts)} – `+SCH[ty].lab(r)),h('span',{class:'who'},(r.obs||'').split(' ')[0]+' ✏'))):h('p',{class:'muted'},'Aucune saisie.'));
+ return h('div',{class:'card'},h('h3',{},'✏ Corriger une saisie'),h('p',{class:'muted'},'Toucher une ligne pour la modifier ou la supprimer, à tout moment. Les collègues reçoivent la correction à la synchronisation.'),h('div',{class:'row'},sel),tog,list)}
 /* ---------- compléments dans les écrans ---------- */
 const _r=render;render=function(){_r();draw();
  // Oiseaux : bouton de fin
@@ -51,10 +63,12 @@ const _r=render;render=function(){_r();draw();
    if(s.pose&&!s.vue_t0)a.append(h('button',{class:'btn2',onclick:()=>{s.vue_t0=now();s.vue_debut=hhmm();put(s);render()}},'🔎 Démarrer la recherche à vue (15 min)'));
    if(s.vue_t0)card.append(h('p',{class:'muted'},`Recherche à vue : début ${s.vue_debut||''}${s.vue_fin?' – fin '+s.vue_fin:' (en cours)'}`));
    if(s.vue_t0&&!s.vue_fin){const sel=V.querySelectorAll('.card.form select');sel.forEach(x=>{if([...x.options].some(o=>o.value==='Recherche à vue'))x.value='Recherche à vue'})}}}
+ if(S.tab==='donnees'){const c=editCard();const ex=[...V.querySelectorAll('.card')].find(x=>/Exporter/.test(x.querySelector('h3')?.textContent||''));ex?ex.before(c):V.append(c)}
  // Reptiles : rappel
  if(S.tab==='reptiles'){const c=[...V.querySelectorAll('.card')].find(x=>/Temps de recherche/.test(x.textContent));if(c&&!c.querySelector('.cnote'))c.append(h('p',{class:'muted cnote'},'Le temps du chrono est noté tout seul sur chaque reptile. ⏹ Terminer à la fin du parcours.'))}
 };
-document.head.append(h('style',{},`#chronobar{position:sticky;top:var(--hh,108px);z-index:6;display:flex;flex-direction:column;gap:2px;background:#102A1C;padding:4px 8px}
+document.head.append(h('style',{},`.emod{position:fixed;inset:0;z-index:65;background:rgba(0,0,0,.55);overflow:auto;padding:12px}.ebox{background:#F4F7F5;border-radius:14px;padding:10px;max-width:640px;margin:0 auto}.ehd{display:flex;justify-content:space-between;align-items:center;padding:4px 4px 8px}.emod .form .actions{position:static!important;margin:0!important}
+#chronobar{position:sticky;top:var(--hh,108px);z-index:6;display:flex;flex-direction:column;gap:2px;background:#102A1C;padding:4px 8px}
 #chronobar .chb{display:flex;align-items:center;gap:8px;color:#fff;font-size:14px;padding:4px 2px;cursor:pointer}.chb .cl{flex:1;font-weight:600}.chb .ct{font-variant-numeric:tabular-nums;font-weight:800;font-size:18px;color:#FFE082}
 #chronobar button{background:rgba(255,255,255,.18);border:0;color:#fff;border-radius:8px;width:40px;height:34px;font-size:16px}`));
 const setH=()=>{const hh=document.querySelector('header');if(hh)document.documentElement.style.setProperty('--hh',hh.offsetHeight+'px')};setH();addEventListener('resize',setH);

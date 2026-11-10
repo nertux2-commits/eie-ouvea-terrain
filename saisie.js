@@ -103,7 +103,7 @@ function fauPh(n){const sc=fsci(n);const e=sc&&window.FAPH[sc];return e?[sc,...e
 function zoomAny(n){if(flu(n)||envph(n))return fzoom(n);const e=fauPh(n);if(!e)return;const f=Object.values(FAUNE).flat().find(x=>norm(x[0])===norm(n));
  const z=h('div',{class:'zoom',onclick:()=>z.remove()},h('img',{src:inatU(e[1],'large'),style:'max-height:72vh'}),h('div',{class:'zcap'},h('b',{},n),f?h('div',{},f[1].replace(' – ENVAHISSANTE',''),' · ',f[2]):null,h('div',{style:'opacity:.75;font-size:12px'},`Photo : ${e[3]||'anonyme'} (${String(e[2]).toUpperCase()}), iNaturalist – usage interne non commercial. Photo de référence, pas d’Ouvéa.`)));document.body.append(z)}
 function anyThumb(n,w,hh){let t=fthumb(n,w,hh);if(!t){const e=fauPh(n);if(e)t=h('div',{class:'fth',style:`width:${w}px;height:${hh}px;background:#eee url('${inatU(e[1],'small')}') center/cover`})}
- if(t){t.addEventListener('pointerdown',ev=>{ev.stopPropagation();ev.preventDefault();zoomAny(n)});t.title='Toucher pour agrandir'}return t}
+ if(t){t.addEventListener('pointerdown',ev=>{ev.stopPropagation();ev.preventDefault()});t.addEventListener('click',ev=>{ev.stopPropagation();ev.preventDefault();zoomAny(n)});t.title='Toucher pour agrandir'}return t}
 window.eieZoom=zoomAny;window.eieThumb=anyThumb;
 setTimeout(()=>{try{const c=navigator.connection;if(!navigator.onLine||(c&&(c.saveData||/2g/.test(c.effectiveType||''))))return;caches.open('eie-ill').then(ca=>Promise.all(Object.values(window.FAPH).map(v=>{const u=inatU(v[0],'small');return ca.match(u).then(m=>m||fetch(u,{mode:'no-cors'}).then(r=>ca.put(u,r)).catch(()=>{}))})))}catch(e){}},12000);
 /* ---- champ avec suggestions ---- */
@@ -127,9 +127,9 @@ function attachAC(inp,kind,box,type,field){
  const pick=n=>{inp.value=n;dd.innerHTML='';dd.style.display='none';apply(n);inp.dispatchEvent(new Event('input'));inp.blur()};
  const show=()=>{const r=search(kind,inp.value);dd.innerHTML='';if(!r.length||norm(inp.value)===norm(r[0].n)&&r.length===1){dd.style.display='none';return}
   for(const e of r){const it=h('div',{class:'acit',html:`<div class="actx"><div><b>${e.n.replace(/^(\S+)/,'<i>$1</i>')}</b></div><div class="acsub">${badge(e)} ${line(e)}${(kind==='plantes'||kind==='envahissantes')&&flu(e.n)&&flu(e.n)[3]?'<br><span class="vern">'+flu(e.n)[3]+'</span>':''}</div></div>`});const t=anyThumb(e.n,52,52);if(t)it.prepend(t);
-   it.addEventListener('pointerdown',ev=>{ev.preventDefault();pick(e.n)});dd.append(it)}if(!inp.value.trim())dd.prepend(h('div',{class:'achd'},'Espèces connues à Ouvéa – tapez pour filtrer, touchez la photo pour l’agrandir'));dd.style.display='block'};
+   it.addEventListener('pointerdown',ev=>{ev.preventDefault()});it.addEventListener('click',ev=>{ev.preventDefault();pick(e.n)});dd.append(it)}if(!inp.value.trim())dd.prepend(h('div',{class:'achd'},'Espèces connues à Ouvéa – tapez pour filtrer, touchez la photo pour l’agrandir'));dd.style.display='block'};
  inp.addEventListener('input',e=>{if(e.isTrusted!==false)show()});inp.addEventListener('focus',show);
- inp.addEventListener('blur',()=>setTimeout(()=>{dd.style.display='none';apply(inp.value)},150));
+ inp.addEventListener('blur',()=>setTimeout(()=>{if(document.activeElement===inp||document.querySelector('.zoom'))return;dd.style.display='none';apply(inp.value)},450));
  if(inp.value)apply(inp.value);
 }
 
