@@ -45,7 +45,7 @@ setInterval(draw,1000);draw();
 addPhoto=function(rec,label){if(window.RO&&RO()){toast('Consultation seule',true);return Promise.resolve(null)}
  return new Promise(ok=>{let done=false;const fin=v=>{if(done)return;done=true;sh.remove();ok(v)};
   const pickF=cap=>{const inp=h('input',{type:'file',accept:'image/*',style:'display:none'});if(cap)inp.setAttribute('capture','environment');document.body.append(inp);
-   inp.onchange=async()=>{const f=inp.files[0];inp.remove();if(!f)return fin(null);try{const data=await compress(f);const id=uid();await pPut({id,rec:rec.id,label,data,ts:now(),obs:S.obs,dev:S.dev,synced:false,src:cap?'appareil':'galerie',nom_fichier:f.name||''});fin(id)}catch(e){toast('Photo illisible',true);fin(null)}};inp.click()};
+   inp.onchange=async()=>{const f=inp.files[0];inp.remove();if(!f)return fin(null);try{const data=await compress(f);const id=uid();await pPut({id,rec:rec.id,label,data,ts:now(),obs:S.obs,dev:S.dev,synced:false,src:cap?'appareil':'galerie',nom_fichier:f.name||''});fin(id)}catch(e){toast('Photo illisible : '+(e&&e.message||'')+'. Réessayer avec « Choisir dans la galerie ».',true);fin(null)}};inp.click()};
   const sh=h('div',{class:'phsheet',onclick:e=>{if(e.target===sh)fin(null)}},h('div',{class:'phbox'},h('b',{},'Ajouter une photo'),
    h('button',{class:'btn',onclick:()=>pickF(true)},'📷 Prendre une photo'),h('button',{class:'btn2',onclick:()=>pickF(false)},'🖼 Choisir dans la galerie'),h('button',{class:'linkb',onclick:()=>fin(null)},'Annuler')));
   document.body.append(sh)})};
@@ -113,7 +113,15 @@ function lazyThumb(id,eager){const img=h('img',{class:'th',alt:'photo',src:PHOLD
 thumb=async function(id){return lazyThumb(id,true)};
 
 /* photos plus légères : 1280 px, qualité 0,6 (≈ 250 Ko au lieu de ≈ 600 Ko) */
-compress=function(file){return new Promise((ok,ko)=>{const img=new Image();const url=URL.createObjectURL(file);img.onload=()=>{const M=1280;let w=img.width,hh=img.height;const k=Math.min(1,M/Math.max(w,hh));w=Math.round(w*k);hh=Math.round(hh*k);const c=document.createElement('canvas');c.width=w;c.height=hh;c.getContext('2d').drawImage(img,0,0,w,hh);URL.revokeObjectURL(url);ok(c.toDataURL('image/jpeg',0.6))};img.onerror=ko;img.src=url})};
+compress=async function(file){const M=1280,Q=0.6;
+ const draw=(src,w0,h0)=>{const k=Math.min(1,M/Math.max(w0,h0));const w=Math.max(1,Math.round(w0*k)),hh=Math.max(1,Math.round(h0*k));const c=document.createElement('canvas');c.width=w;c.height=hh;c.getContext('2d').drawImage(src,0,0,w,hh);const d=c.toDataURL('image/jpeg',Q);if(!d||d.length<200)throw new Error('canvas');return d};
+ // 1) décodage direct (le plus robuste sur Android, gère les très grandes photos)
+ try{if(window.createImageBitmap){const b=await createImageBitmap(file,{imageOrientation:'from-image'});const d=draw(b,b.width,b.height);b.close&&b.close();return d}}catch(e){}
+ // 2) méthode classique
+ try{return await new Promise((ok,ko)=>{const img=new Image();const url=URL.createObjectURL(file);img.onload=()=>{try{const d=draw(img,img.naturalWidth,img.naturalHeight);URL.revokeObjectURL(url);ok(d)}catch(e){ko(e)}};img.onerror=()=>{URL.revokeObjectURL(url);ko(new Error('decode'))};img.src=url})}catch(e){}
+ // 3) dernier recours : on garde la photo telle quelle (rien n'est perdu)
+ if(file.size&&file.size<9e6){const d=await new Promise((ok,ko)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>ko(r.error);r.readAsDataURL(file)});toast('Photo gardée telle quelle'+(/hei[cf]/i.test(file.type+file.name)?' (format HEIC)':''));return d}
+ throw new Error(`format ${file.type||'?'} ${(file.size/1e6).toFixed(1)} Mo`)};
 
 /* galerie : toutes les photos de l'équipe */
 const TLAB={rep_obs:'🦎 Reptile',oi_contact:'🐦 Oiseau',oi_nid:'🐦 Nid',fo_obs:'🐜 Fourmis',espece:'🌿 Espèce',arbre:'🌳 Arbre',jeunes:'🌱 Jeunes plants',herbier:'📚 Herbier',carre:'▦ Carré',note:'📝 Note',eee:'⚠ Envahissante'};
