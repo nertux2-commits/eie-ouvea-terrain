@@ -70,13 +70,13 @@ const PLAN=[
  ['2026-11-10','14 h – 17 h 30','Tous','Mise en place : piquets de l’emprise (M1, M2, M3), quarts, petits carrés 5 × 5 en haut à droite, puis placette P1','carte'],
  ['2026-11-10','19 h – 20 h 30','Glwadys,Marvin','Reptiles de nuit n° 1','reptiles'],
  ['2026-11-10','Soir','Tous','Charger téléphone, GPS, appareil photo ; Données › « Tout préparer »','donnees'],
- ['2026-11-11','6 h 30','Cédric','Oiseaux : point d’écoute O1 + parcours (passage 1)','oiseaux'],
+ ['2026-11-11','5 h 30','Cédric','Oiseaux : point d’écoute O1 + parcours (passage 1)','oiseaux'],
  ['2026-11-11','7 h 30 – 12 h','Georges,Jean-Marie,Glwadys,Cédric','Plantes : carré M1','plantes:M1'],
  ['2026-11-11','8 h – 10 h 30','Marvin','Fourmis : postes F1, F2, F3 (centre de M1, M2, M3), puis plantes M1','fourmis'],
  ['2026-11-11','13 h – 17 h','Tous','Plantes : carré M2','plantes:M2'],
  ['2026-11-11','17 h 30 – 18 h 30','Tous','Contrôle des saisies, herbier','donnees'],
  ['2026-11-11','19 h – 20 h 30','Glwadys,Marvin','Reptiles de nuit n° 2','reptiles'],
- ['2026-11-12','6 h 30','Cédric','Oiseaux : passage 2 (6 h 30, même heure que la veille)','oiseaux'],
+ ['2026-11-12','5 h 30','Cédric','Oiseaux : passage 2 (5 h 30, même heure que la veille)','oiseaux'],
  ['2026-11-12','7 h 30 – 12 h','Georges,Jean-Marie,Glwadys,Cédric','Plantes : carré M3','plantes:M3'],
  ['2026-11-12','8 h – 10 h 30','Marvin','Fourmis : poste F4 (centre de P1)','fourmis'],
  ['2026-11-12','10 h 30 – 11 h 30','Glwadys,Marvin','Reptiles de jour (soleil), puis plantes M3','reptiles'],
@@ -173,7 +173,7 @@ function timer15(){const t0=Date.now();const lab=h('b',{},'15:00');const ov=h('d
  const iv=setInterval(()=>{const l=900000-(Date.now()-t0);if(l<=0){clearInterval(iv);lab.textContent='Terminé';vibrate();beep();return}lab.textContent=fmt(l)},500)}
 function guideOiseaux(){const s=R[S.oi];const ok=s&&!s.deleted;const el=ok&&s.t0?Date.now()-Date.parse(s.t0):0;
  const steps=[
-  {k:'o1',t:'Créer le passage',x:'Mercredi (passage 1) et jeudi (passage 2) à 6 h 30, exactement à la même heure les deux matins. Pas de relevé par vent fort ou pluie. Noter la météo et le vent.',done:ok,go:()=>{S.oisub='point';setTimeout(()=>[...document.querySelectorAll('.workarea button')].find(b=>/Nouvelle/.test(b.textContent))?.click(),200)},gl:'+ Nouveau passage ↓'},
+  {k:'o1',t:'Créer le passage',x:'Mercredi (passage 1) et jeudi (passage 2) à 5 h 30, exactement à la même heure les deux matins. Pas de relevé par vent fort ou pluie. Noter la météo et le vent.',done:ok,go:()=>{S.oisub='point';setTimeout(()=>[...document.querySelectorAll('.workarea button')].find(b=>/Nouvelle/.test(b.textContent))?.click(),200)},gl:'+ Nouveau passage ↓'},
   {k:'o2',t:'Arriver en silence au point O1',x:'Rejoindre le centre de l’emprise (point OUV-O1 dans le GPS et l’onglet Carte), puis attendre 1 minute sans bouger avant de démarrer.',done:ok&&(isDone('oi_arr_'+s.id)||!!s.t0),man:ok?'oi_arr_'+s.id:null,go:null},
   {k:'o3',t:'Écoute 10 minutes',x:'Toucher « Démarrer l’écoute ». Noter chaque oiseau vu ou entendu (tapez le code à 4 lettres, ex. PEOU, MALO) : contact, distance < ou > 15 m. Alarme à 10 min.',done:ok&&el>=600000,c:ok&&s.t0&&el<600000?`reste ${Math.ceil((600000-el)/60000)} min`:'',gl:'Démarrer / noter ↓',go:()=>{S.oisub='point'}},
   {k:'o4',t:'Parcours lent 20 minutes',x:'Marcher lentement dans l’emprise et continuer à noter (phase « Parcours » remplie toute seule). Alarme à la fin.',done:ok&&el>=1800000,c:ok&&s.t0&&el>=600000&&el<1800000?`reste ${Math.ceil((1800000-el)/60000)} min`:'',gl:'Noter ↓',go:()=>{S.oisub='point'}},

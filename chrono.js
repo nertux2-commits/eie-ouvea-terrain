@@ -40,6 +40,15 @@ function draw(){const a=active();bar.innerHTML='';bar.style.display=a.length?'':
 setInterval(draw,1000);draw();
 
 
+
+/* ---------- photo : appareil photo OU galerie du téléphone ---------- */
+addPhoto=function(rec,label){if(window.RO&&RO()){toast('Consultation seule',true);return Promise.resolve(null)}
+ return new Promise(ok=>{let done=false;const fin=v=>{if(done)return;done=true;sh.remove();ok(v)};
+  const pickF=cap=>{const inp=h('input',{type:'file',accept:'image/*',style:'display:none'});if(cap)inp.setAttribute('capture','environment');document.body.append(inp);
+   inp.onchange=async()=>{const f=inp.files[0];inp.remove();if(!f)return fin(null);try{const data=await compress(f);const id=uid();await pPut({id,rec:rec.id,label,data,ts:now(),obs:S.obs,dev:S.dev,synced:false,src:cap?'appareil':'galerie',nom_fichier:f.name||''});fin(id)}catch(e){toast('Photo illisible',true);fin(null)}};inp.click()};
+  const sh=h('div',{class:'phsheet',onclick:e=>{if(e.target===sh)fin(null)}},h('div',{class:'phbox'},h('b',{},'Ajouter une photo'),
+   h('button',{class:'btn',onclick:()=>pickF(true)},'📷 Prendre une photo'),h('button',{class:'btn2',onclick:()=>pickF(false)},'🖼 Choisir dans la galerie'),h('button',{class:'linkb',onclick:()=>fin(null)},'Annuler')));
+  document.body.append(sh)})};
 /* ---------- corriger une saisie, même longtemps après ---------- */
 const ETYPES=[['rep_obs','Reptiles'],['oi_contact','Oiseaux (contacts)'],['oi_nid','Nids et cavités'],['fo_obs','Fourmis'],['espece','Plantes – espèces'],['arbre','Arbres'],['jeunes','Jeunes plants'],['herbier','Herbier'],['carre','Description des carrés'],['note','Carnet de notes']];
 function editModal(id,done){const r=R[id];if(!r||!SCH[r.type])return;const m=h('div',{class:'emod'});const close=()=>{m.remove();done&&done()};
@@ -67,7 +76,8 @@ const _r=render;render=function(){_r();draw();
  // Reptiles : rappel
  if(S.tab==='reptiles'){const c=[...V.querySelectorAll('.card')].find(x=>/Temps de recherche/.test(x.textContent));if(c&&!c.querySelector('.cnote'))c.append(h('p',{class:'muted cnote'},'Le temps du chrono est noté tout seul sur chaque reptile. ⏹ Terminer à la fin du parcours.'))}
 };
-document.head.append(h('style',{},`.emod{position:fixed;inset:0;z-index:65;background:rgba(0,0,0,.55);overflow:auto;padding:12px}.ebox{background:#F4F7F5;border-radius:14px;padding:10px;max-width:640px;margin:0 auto}.ehd{display:flex;justify-content:space-between;align-items:center;padding:4px 4px 8px}.emod .form .actions{position:static!important;margin:0!important}
+document.head.append(h('style',{},`.phsheet{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}.phbox{background:#fff;width:100%;max-width:520px;border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px}.phbox b{font-size:17px;color:#1F4D33}
+.emod{position:fixed;inset:0;z-index:65;background:rgba(0,0,0,.55);overflow:auto;padding:12px}.ebox{background:#F4F7F5;border-radius:14px;padding:10px;max-width:640px;margin:0 auto}.ehd{display:flex;justify-content:space-between;align-items:center;padding:4px 4px 8px}.emod .form .actions{position:static!important;margin:0!important}
 #chronobar{position:sticky;top:var(--hh,108px);z-index:6;display:flex;flex-direction:column;gap:2px;background:#102A1C;padding:4px 8px}
 #chronobar .chb{display:flex;align-items:center;gap:8px;color:#fff;font-size:14px;padding:4px 2px;cursor:pointer}.chb .cl{flex:1;font-weight:600}.chb .ct{font-variant-numeric:tabular-nums;font-weight:800;font-size:18px;color:#FFE082}
 #chronobar button{background:rgba(255,255,255,.18);border:0;color:#fff;border-radius:8px;width:40px;height:34px;font-size:16px}`));
