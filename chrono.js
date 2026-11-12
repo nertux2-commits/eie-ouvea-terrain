@@ -147,5 +147,77 @@ const _r2=render;render=function(){_r2();
  if(S.tab==='donnees'){const c=galleryCard();const ed=[...V.querySelectorAll('.card')].find(x=>/Corriger une saisie/.test(x.querySelector('h3')?.textContent||''));ed?ed.before(c):V.append(c)}
  if(S.tab==='reptiles'){const s=R[S.rep];if(s&&s.fin){V.querySelectorAll('.card .actions button').forEach(b=>{if(/Reprendre/.test(b.textContent))b.textContent='↺ Rouvrir la session';if(/Terminer/.test(b.textContent))b.style.display='none'})}}};
 document.head.append(h('style',{},`.gal{display:flex;flex-direction:column;gap:8px;margin:8px 0}.gi{display:flex;gap:10px;align-items:center;background:#fff;border-radius:10px;padding:6px}.gi .th{width:84px;height:84px;object-fit:cover;border-radius:8px;flex:none}.gt{display:flex;flex-direction:column;gap:2px;font-size:14px;min-width:0}.gt span{color:#5b6b62;font-size:12.5px}.gt .linkb{align-self:flex-start;padding:2px 0}`));
+
+/* ---------- v2.3.7 : volet HERBIER guidé (priorités, méthode, photos) ---------- */
+const HPH=[['port','1. Port de la plante','La plante entière, en reculant de 3 à 5 m, avec une personne ou le jalon à côté pour l’échelle.',true],
+ ['fdessus','2. Feuille – dessus','Une feuille posée à plat sur le carnet (fond clair), face du dessus, avec la règle ou le mètre.',true],
+ ['fdessous','3. Feuille – dessous','La même feuille retournée : nervures, poils, glandes. Bien net, de près.',true],
+ ['fleurs','4. Fleurs ou fruits','Gros plan (mode macro). Si ni fleurs ni fruits : passer.',false],
+ ['ecorce','5. Tronc / écorce','L’écorce à hauteur de poitrine. Si latex, odeur ou couleur sous l’écorce : le noter en remarque.',false],
+ ['etiq','6. Échantillon + étiquette','Le rameau coupé posé sur fond clair, avec l’étiquette du n° LOY bien lisible.',true]];
+const nrm=x=>String(x||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
+const UNK=/(\bsp\b\.?|\bspp\b|indet|indét|inconnu|\?|provisoire|^plante |^arbre |^liane |^herbe )/i;
+const STN={L:'Endémique des Loyauté',N:'Endémique de Nouvelle-Calédonie',I:'Indigène',A:'Introduite ancienne',M:'Introduite moderne'};
+let BIN=null;function info2(n){let I=window.eieInfo&&eieInfo(n);if(I)return I;const w=nrm(n).replace(/[^a-z ]/g,' ').split(' ').filter(Boolean);if(w.length<2||/^(sp|spp)$/.test(w[1]))return null;
+ if(!BIN){BIN=new Map();(window.FLORE||[]).forEach(f=>{const k=nrm(f[0]).split(' ').slice(0,2).join(' ');if(!BIN.has(k))BIN.set(k,{st:f[2],ab:f[5],fam:f[1]})})}
+ return BIN.get(w[0]+' '+w[1])||null}
+function herbPriorities(){const sp={};
+ const addN=(n,r)=>{n=String(n||'').trim();if(!n)return;const k=nrm(n);const o=sp[k]||(sp[k]={n,car:new Set(),nb:0,hnum:''});o.car.add(r.carre||'?');o.nb++;if(r.herbier||r.n_herbier)o.hnum=o.hnum||r.herbier||r.n_herbier};
+ live('espece').forEach(r=>addN(r.espece,r));live('arbre').forEach(r=>addN(r.espece,r));live('jeunes').forEach(r=>addN(r.espece,r));
+ const done={};live('herbier').forEach(r=>{done[nrm(r.nom)]=r.num});
+ const out=[];for(const [k,o] of Object.entries(sp)){const I=info2(o.n),P=window.eieProt&&eieProt(o.n),E=window.eieEnvOf&&eieEnvOf(o.n);
+  let p=0,why='';
+  if(P){p=9;why='🛡 Protégée : photos seulement, PAS de prélèvement'}
+  else if(UNK.test(o.n)||(!I&&!E)){p=1;why='🌿 Non identifiée : échantillon obligatoire'}
+  else if(I&&I.st==='L'){p=2;why='⭐ '+STN.L}
+  else if(I&&I.st==='N'&&/rare/i.test(I.ab||'')){p=2;why='⭐ Endémique NC, rare à Ouvéa'}
+  else if(I&&I.st==='N'){p=3;why='⭐ '+STN.N+' (au choix de Jean-Marie)'}
+  else if(I&&I.st==='I'&&/rare/i.test(I.ab||'')){p=3;why='Indigène rare à Ouvéa (au choix de Jean-Marie)'}
+  else continue;
+  out.push({...o,p,why,car:[...o.car].sort().join(' '),fait:done[k]||o.hnum||''})}
+ return out.sort((a,b)=>(!!a.fait-!!b.fait)||a.p-b.p||b.nb-a.nb)}
+function newHerb(o){const r=newRec('herbier');r.nom=o?o.n:'';r.carre=(o&&o.car.split(' ')[0])||S.carre;r.quart=S.quart||'a';r.num=nextHerb();r.photos=[];r.phg={};
+ try{window.eieFix&&eieFix.startFix()}catch(e){}put(r);S.herbSel=r.id;saveS();toast('N° '+r.num+' – écrire ce numéro sur l’étiquette');render();setTimeout(()=>document.querySelector('.hguide')?.scrollIntoView({behavior:'smooth'}),100)}
+async function shoot(r,k,lab){const id=await addPhoto(r,`${r.num} ${lab}`);if(!id)return;r.photos=r.photos||[];r.photos.push(id);r.phg=r.phg||{};r.phg[k]=id;put(r);toast('Photo enregistrée – envoyée au serveur à la prochaine synchro');render();if(navigator.onLine)setTimeout(()=>sync(false),800)}
+function guideCard(r){const g=r.phg||{};const need=HPH.filter(x=>x[3]);const ok=need.filter(x=>g[x[0]]).length;
+ return h('div',{class:'card hguide'},h('h3',{},`📷 ${r.num} – ${r.nom||'nom provisoire ?'}`),
+  h('p',{class:'muted'},`Carré ${r.carre||''}${r.quart||''} · ${ok}/${need.length} photos obligatoires · ${r.lat?'📍 GPS pris':'📍 GPS en cours…'}`),
+  ...HPH.map(([k,t,x,req])=>h('div',{class:'hph'+(g[k]?' ok':'')},g[k]?lazyThumb(g[k]):h('div',{class:'hnum'},g[k]?'✔':(req?'●':'○')),
+   h('div',{class:'htx'},h('b',{},t+(req?'':' (si possible)')),h('span',{},x)),
+   h('button',{class:g[k]?'btn2':'btn',onclick:()=>shoot(r,k,t.replace(/^\d\. /,''))},g[k]?'Refaire':'📷'))),
+  h('div',{class:'actions'},h('button',{class:'btn2',onclick:()=>editModal(r.id,render)},'✏ Fleurs / fruits / remarque'),h('button',{class:'linkb',onclick:()=>{S.herbSel='';saveS();render()}},'Fermer')))}
+function herbView(){const pr=herbPriorities();const todo=pr.filter(x=>!x.fait&&x.p<9),prot=pr.filter(x=>x.p===9),fait=pr.filter(x=>x.fait&&x.p<9);
+ const meth=h('details',{class:'card hmeth',open:!live('herbier').length},h('summary',{},'📚 Comment faire un échantillon (6 étapes)'),h('ol',{},
+  h('li',{},h('b',{},'Choisir le pied : '),'sain, typique, si possible avec fleurs ou fruits (fertile).'),
+  h('li',{},h('b',{},'Toucher « Récolter » : '),'l’appli donne le n° LOY-OUV26-… et prend le point GPS.'),
+  h('li',{},h('b',{},'Photos AVANT de couper : '),'suivre la liste (port, feuille dessus/dessous, fleurs-fruits, écorce).'),
+  h('li',{},h('b',{},'Couper un rameau de 30 à 40 cm '),'(la taille d’une page de journal) avec feuilles + fleurs/fruits. 2 ou 3 parts si la plante est abondante.'),
+  h('li',{},h('b',{},'Étiquette au crayon '),'avec le n° LOY attachée au rameau → dernière photo « échantillon + étiquette ».'),
+  h('li',{},h('b',{},'Sac fermé à l’ombre, '),'puis presse le soir même entre papier journal (Jean-Marie). Changer le papier chaque jour.')),
+  h('p',{class:'muted'},'🛡 Espèces protégées : jamais de prélèvement sans autorisation → photos seulement (même liste de photos, sans couper). Les photos partent sur le serveur (Supabase) à la synchro, avec le n° LOY dans leur nom.'));
+ const row=(o,act)=>h('div',{class:'hli'},h('div',{class:'htx'},h('b',{},o.n),h('span',{},`${o.why} · ${o.car}${o.fait?' · ✔ '+o.fait:''}`)),act);
+ const recBtn=o=>h('button',{class:'btn',onclick:()=>newHerb(o)},'Récolter');
+ const phBtn=o=>h('button',{class:'btn2',onclick:()=>newHerb(o)},'📷 Photos');
+ const box=[meth];
+ const sel=R[S.herbSel];if(sel&&!sel.deleted&&sel.type==='herbier')box.unshift(guideCard(sel));
+ box.push(h('div',{class:'card'},h('h3',{},`🎯 À récolter en priorité (${todo.length})`),
+  h('p',{class:'muted'},'Liste faite automatiquement à partir des espèces déjà notées dans les carrés. En haut : les non identifiées, puis les endémiques.'),
+  todo.length?h('div',{},todo.map(o=>row(o,recBtn(o)))):h('p',{class:'muted'},'Rien à récolter pour l’instant.'),
+  h('button',{class:'btn2',onclick:()=>newHerb(null)},'+ Autre échantillon (espèce hors liste)')));
+ if(prot.length)box.push(h('div',{class:'card'},h('h3',{},`🛡 Protégées : photos seulement (${prot.length})`),prot.map(o=>row(o,phBtn(o)))));
+ const hs=live('herbier').sort((a,b)=>String(a.num)<String(b.num)?1:-1);
+ box.push(h('div',{class:'card'},h('h3',{},`✔ Échantillons déjà faits (${hs.length})`),hs.length?hs.map(r=>{const n=HPH.filter(x=>x[3]&&(r.phg||{})[x[0]]).length;
+  return h('div',{class:'hli',onclick:()=>{S.herbSel=r.id;saveS();render();setTimeout(()=>document.querySelector('.hguide')?.scrollIntoView(),50)}},h('div',{class:'htx'},h('b',{},`${r.num} – ${r.nom||'?'}`),h('span',{},`${r.carre||''}${r.quart||''} · ${(r.obs||'').split(' ')[0]} · photos guidées ${n}/4 ${n<4?'⚠':'✔'} · ${(r.photos||[]).length} photo(s)`)),h('span',{},'›'))}):h('p',{class:'muted'},'Aucun.')));
+ return box}
+const _r3=render;render=function(){_r3();if(S.tab!=='plantes')return;
+ if(S.herb){V.innerHTML='';V.append(h('button',{class:'btn2 hback',onclick:()=>{S.herb=0;saveS();render()}},'← Retour aux carrés'),h('h2',{class:'htitle'},'📚 Herbier'));herbView().forEach(c=>V.append(c));return}
+ const n=herbPriorities().filter(x=>!x.fait&&x.p<9).length;
+ V.prepend(h('button',{class:'btn herbgo',onclick:()=>{S.herb=1;saveS();render();scrollTo(0,0)}},`📚 Herbier – ${n} espèce(s) à récolter · ${live('herbier').length} fait(s)`))};
+document.head.append(h('style',{},`.hmeth summary{font-weight:700;color:#1F4D33;cursor:pointer}.hmeth ol{padding-left:20px;margin:8px 0}.hmeth li{margin:4px 0}
+.hli{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #E3EAE6}.hli .btn,.hli .btn2{flex:none;padding:8px 12px;min-height:0;width:auto}
+.htx{flex:1;display:flex;flex-direction:column;min-width:0}.htx span{font-size:12.5px;color:#5b6b62}
+.hph{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #E3EAE6}.hph .th{width:56px;height:56px;object-fit:cover;border-radius:8px;flex:none}
+.hph .hnum{width:56px;height:56px;border-radius:8px;background:#E3EAE6;display:flex;align-items:center;justify-content:center;color:#C0392B;flex:none}.hph.ok .htx b{color:#1F4D33}
+.hph .btn,.hph .btn2{flex:none;width:auto;min-height:0;padding:10px 14px}.hguide{border:2px solid #2E7D4F}.herbgo{margin:8px 0 10px;background:#5D4037}.hback{width:auto;margin:6px 0}.htitle{margin:6px 2px;color:#1F4D33}`));
 render();
 })();
