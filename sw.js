@@ -1,4 +1,4 @@
-const C='eieterrain-v2.3.4';
+const C='eieterrain-v2.3.5';
 const FILES=['./','index.html','app.js','prot.js','patch.js','photos.js','ui.js','extra.js','flore.js','saisie.js','terrain.js','guide.js','gps.js','chrono.js','florule.js','ill_perruche.jpg','florule/f0.jpg','florule/f1.jpg','florule/f2.jpg','florule/f3.jpg','florule/f4.jpg','florule/f5.jpg','florule/f6.jpg','carte_ortho.jpg','carte_A3.pdf','manifest.webmanifest','icon.svg','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>Promise.all(FILES.map(f=>fetch(new Request(f,{cache:'reload'})).then(r=>{if(r.ok)return c.put(f,r)})))).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('eieterrain-')&&k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});

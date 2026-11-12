@@ -82,5 +82,62 @@ document.head.append(h('style',{},`.phsheet{position:fixed;inset:0;z-index:90;ba
 #chronobar .chb{display:flex;align-items:center;gap:8px;color:#fff;font-size:14px;padding:4px 2px;cursor:pointer}.chb .cl{flex:1;font-weight:600}.chb .ct{font-variant-numeric:tabular-nums;font-weight:800;font-size:18px;color:#FFE082}
 #chronobar button{background:rgba(255,255,255,.18);border:0;color:#fff;border-radius:8px;width:40px;height:34px;font-size:16px}`));
 const setH=()=>{const hh=document.querySelector('header');if(hh)document.documentElement.style.setProperty('--hh',hh.offsetHeight+'px')};setH();addEventListener('resize',setH);
+
+/* ---------- v2.3.5 : chrono vraiment arrêté à la fin ---------- */
+const _ch=chrono;chrono=function(s,act){if(!s)return;
+ if(s.fin&&act==='resume')return;           // une session terminée ne redémarre plus quand on enregistre/corrige un reptile
+ if(s.fin&&act==='start'){if(!confirm(`Session terminée à ${s.fin}. La rouvrir et relancer le chrono ?`))return;s.fin=null;s.temps_min=null}
+ if(s.fin&&act==='stop')return;
+ return _ch(s,act)};
+function repairRep(){for(const s of live('rep_session')){if(s.fin&&s.temps_min!=null&&(s.run||Math.abs((s.acc||0)/60000-s.temps_min)>1)){s.acc=s.temps_min*60000;s.run=null;put(s)}}}
+function autoEnd(){const hm=t=>new Date(t).toTimeString().slice(0,5);
+ for(const s of live('oi_session'))if(s.t0&&!s.fin&&since(s.t0)>=1800000&&since(s.t0)<6*3600000){s.fin=hm(Date.parse(s.t0)+1800000);s.duree_min=30;put(s)}
+ for(const s of live('fo_poste'))if(s.vue_t0&&!s.vue_fin&&since(s.vue_t0)>=900000){s.vue_fin=hm(Date.parse(s.vue_t0)+900000);put(s)}}
+setInterval(()=>{try{repairRep();autoEnd()}catch(e){}},5000);try{repairRep();autoEnd()}catch(e){}
+
+/* ---------- v2.3.5 : photos visibles sur tous les téléphones ---------- */
+const PH_MEM={};
+async function getPh(id){let p=null;try{p=await pGet(id)}catch(e){}if(p&&p.data)return p;
+ if(!navigator.onLine||!S.team)return null;
+ if(!PH_MEM[id])PH_MEM[id]=api(`photos?id=eq.${encodeURIComponent(id)}&select=id,rec_id,label,data,obs,dev,ts`).then(async r=>{const x=r&&r[0];if(!x)return null;
+   const q={id:x.id,rec:x.rec_id,label:x.label,data:x.data,obs:x.obs,dev:x.dev,ts:x.ts,synced:true,distant:true};try{await pPut(q)}catch(e){}return q}).catch(()=>{delete PH_MEM[id];return null});
+ return PH_MEM[id]}
+window.eieGetPh=getPh;
+const PHOLD='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#E3EAE6"/><text x="40" y="47" font-size="26" text-anchor="middle">📷</text></svg>');
+function zoomSrc(src){const w=h('div',{class:'zoom',onclick:()=>w.remove()},h('img',{src}));document.body.append(w)}
+function lazyThumb(id,eager){const img=h('img',{class:'th',alt:'photo',src:PHOLD});let p=null,busy=false;
+ const load=async()=>{if(busy||p)return;busy=true;p=await getPh(id);busy=false;if(p)img.src=p.data;else img.title='Photo pas encore disponible (réseau ?)'};
+ img.onclick=async()=>{if(!p)await load();if(p)zoomSrc(p.data);else toast('Photo indisponible pour l’instant (réseau ?)',true)};
+ if(eager||!('IntersectionObserver' in window))load();else{const io=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){io.disconnect();load()}},{rootMargin:'200px'});io.observe(img)}
+ return img}
+thumb=async function(id){return lazyThumb(id,true)};
+
+/* photos plus légères : 1280 px, qualité 0,6 (≈ 250 Ko au lieu de ≈ 600 Ko) */
+compress=function(file){return new Promise((ok,ko)=>{const img=new Image();const url=URL.createObjectURL(file);img.onload=()=>{const M=1280;let w=img.width,hh=img.height;const k=Math.min(1,M/Math.max(w,hh));w=Math.round(w*k);hh=Math.round(hh*k);const c=document.createElement('canvas');c.width=w;c.height=hh;c.getContext('2d').drawImage(img,0,0,w,hh);URL.revokeObjectURL(url);ok(c.toDataURL('image/jpeg',0.6))};img.onerror=ko;img.src=url})};
+
+/* galerie : toutes les photos de l'équipe */
+const TLAB={rep_obs:'🦎 Reptile',oi_contact:'🐦 Oiseau',oi_nid:'🐦 Nid',fo_obs:'🐜 Fourmis',espece:'🌿 Espèce',arbre:'🌳 Arbre',jeunes:'🌱 Jeunes plants',herbier:'📚 Herbier',carre:'▦ Carré',note:'📝 Note',eee:'⚠ Envahissante'};
+function recTxt(rid){const r=R[rid];if(!r)return '';let t=TLAB[r.type]||r.type;try{if(SCH[r.type]&&SCH[r.type].lab)t+=' – '+SCH[r.type].lab(r)}catch(e){}return t}
+function galleryCard(){const box=h('div',{class:'gal'});const st=h('p',{class:'muted'},'');let off=0;const N=30;const seen=new Set();
+ const filt=S.galf||'tout';
+ const sel=h('select',{onchange:e=>{S.galf=e.target.value;saveS();render()}},[['tout','Toutes les photos'],['moi','Mes photos'],['rep_obs','Reptiles'],['oi','Oiseaux'],['fo_obs','Fourmis'],['pl','Plantes']].map(([k,l])=>h('option',{value:k,selected:k===filt},l)));
+ const okT=rid=>{const r=R[rid];const t=r&&r.type;if(filt==='tout'||filt==='moi')return true;if(filt==='oi')return /^oi_/.test(t||'');if(filt==='pl')return ['espece','arbre','jeunes','herbier','carre','eee'].includes(t);return t===filt};
+ const add=x=>{if(seen.has(x.id))return;if(filt==='moi'&&x.obs!==S.obs)return;if(!okT(x.rec))return;seen.add(x.id);
+  box.append(h('div',{class:'gi'},lazyThumb(x.id),h('div',{class:'gt'},h('b',{},recTxt(x.rec)||x.label||'Photo'),h('span',{},`${(x.obs||'').split(' ')[0]} · ${x.ts?new Date(x.ts).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):''}${x.label?' · '+x.label:''}`),
+   R[x.rec]&&SCH[R[x.rec].type]?h('button',{class:'linkb',onclick:()=>editModal(x.rec,render)},'Voir la fiche ✏'):'')))};
+ const more=h('button',{class:'btn2',onclick:()=>page()},'Afficher plus');
+ async function page(){more.disabled=true;st.textContent='Chargement…';
+  try{if(off===0){(await pAll()).filter(p=>!p.synced).sort((a,b)=>a.ts<b.ts?1:-1).forEach(p=>add({id:p.id,rec:p.rec,label:p.label,obs:p.obs,ts:p.ts}))}
+   if(navigator.onLine&&S.team){const rows=await api(`photos?select=id,rec_id,label,obs,ts&order=ts.desc&limit=${N}&offset=${off}`);off+=rows.length;rows.forEach(x=>add({id:x.id,rec:x.rec_id,label:x.label,obs:x.obs,ts:x.ts}));more.style.display=rows.length<N?'none':''}
+   else{(await pAll()).sort((a,b)=>a.ts<b.ts?1:-1).forEach(p=>add({id:p.id,rec:p.rec,label:p.label,obs:p.obs,ts:p.ts}));more.style.display='none'}
+   st.textContent=seen.size?`${seen.size} photo(s) affichée(s). Toucher une photo pour l’agrandir.`:'Aucune photo.';
+  }catch(e){st.textContent='Pas de réseau : seules les photos de ce téléphone sont visibles.';(await pAll()).forEach(p=>add({id:p.id,rec:p.rec,label:p.label,obs:p.obs,ts:p.ts}))}
+  more.disabled=false}
+ const open=h('button',{class:'btn',onclick:()=>{open.remove();sel.style.display='';page()}},'📷 Voir toutes les photos');sel.style.display='none';
+ return h('div',{class:'card'},h('h3',{},'📷 Photos de l’équipe'),h('p',{class:'muted'},'Toutes les photos prises par l’équipe, sur tous les téléphones. Elles se chargent au fur et à mesure (réseau nécessaire pour celles des collègues).'),open,h('div',{class:'row'},sel),st,box,more)}
+const _r2=render;render=function(){_r2();
+ if(S.tab==='donnees'){const c=galleryCard();const ed=[...V.querySelectorAll('.card')].find(x=>/Corriger une saisie/.test(x.querySelector('h3')?.textContent||''));ed?ed.before(c):V.append(c)}
+ if(S.tab==='reptiles'){const s=R[S.rep];if(s&&s.fin){V.querySelectorAll('.card .actions button').forEach(b=>{if(/Reprendre/.test(b.textContent))b.textContent='↺ Rouvrir la session';if(/Terminer/.test(b.textContent))b.style.display='none'})}}};
+document.head.append(h('style',{},`.gal{display:flex;flex-direction:column;gap:8px;margin:8px 0}.gi{display:flex;gap:10px;align-items:center;background:#fff;border-radius:10px;padding:6px}.gi .th{width:84px;height:84px;object-fit:cover;border-radius:8px;flex:none}.gt{display:flex;flex-direction:column;gap:2px;font-size:14px;min-width:0}.gt span{color:#5b6b62;font-size:12.5px}.gt .linkb{align-self:flex-start;padding:2px 0}`));
 render();
 })();
