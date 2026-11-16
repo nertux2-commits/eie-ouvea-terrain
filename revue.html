@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Débriefing plantes – EIE Ouvéa</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{--v:#1F4D33;--v2:#2E7D4F;--cl:#E8F0EA;--g:#5B6B62;--r:#B03A2E;--o:#C77700;--bd:#D5DED8}
+*{box-sizing:border-box}body{margin:0;font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#F4F7F5;color:#1b2a21}
+header{background:var(--v);color:#fff;padding:8px 14px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:20}
+header h1{font-size:17px;margin:0}header .st{font-size:12.5px;opacity:.85}header .sp{flex:1}
+header button,header input{font:inherit}.hb{background:rgba(255,255,255,.15);color:#fff;border:0;border-radius:8px;padding:6px 10px;cursor:pointer}
+nav.tabs{display:flex;gap:4px;padding:8px 14px 0;background:#fff;border-bottom:1px solid var(--bd);flex-wrap:wrap}
+nav.tabs button{border:0;background:none;padding:9px 14px;font:600 14px system-ui;color:var(--g);border-bottom:3px solid transparent;cursor:pointer}
+nav.tabs button.on{color:var(--v);border-color:var(--v2)}
+.wrap{display:grid;grid-template-columns:minmax(380px,46%) 1fr;gap:12px;padding:12px 14px;align-items:start}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}}
+.pane{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:10px;min-width:0}
+.left{max-height:calc(100vh - 120px);overflow:auto}.right{position:sticky;top:110px;max-height:calc(100vh - 122px);overflow:auto}
+.flt{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px}.flt select,.flt input{font:inherit;padding:6px 8px;border:1px solid var(--bd);border-radius:8px}
+.flt input[type=search]{flex:1;min-width:160px}.flt label{font-size:13px;color:var(--g);display:flex;gap:4px;align-items:center}
+table{width:100%;border-collapse:collapse}th{position:sticky;top:-10px;background:#fff;text-align:left;font-size:12px;color:var(--g);padding:6px 6px;border-bottom:2px solid var(--bd);cursor:pointer;white-space:nowrap}
+td{padding:6px;border-bottom:1px solid #EDF1EE;vertical-align:top}tr.it{cursor:pointer}tr.it:hover{background:var(--cl)}tr.sel{background:#D5EBDC!important}
+.b{display:inline-block;font-size:11px;font-weight:600;border-radius:6px;padding:1px 6px;margin:1px 2px 1px 0;white-space:nowrap}
+.bP{background:#FDE2DE;color:var(--r)}.bE{background:#FFF0D6;color:#8A5300}.bL{background:#DDEFFF;color:#1F5C99}.bN{background:#E2F3E6;color:#22663B}.bI{background:#EEE;color:#555}.bA{background:#F3E8FF;color:#6B3FA0}.bX{background:var(--r);color:#fff}
+.mut{color:var(--g);font-size:12.5px}.n{font-variant-numeric:tabular-nums;text-align:right}
+h2{font-size:18px;margin:2px 0 4px;color:var(--v)}h3{font-size:14px;margin:12px 0 6px;color:var(--v)}
+.phs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.ph{position:relative;background:#E3EAE6;border-radius:8px;overflow:hidden;aspect-ratio:1;cursor:zoom-in}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}.ph span{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);color:#fff;font-size:11px;padding:2px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zoom{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:100;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;cursor:zoom-out}
+.zoom img{max-width:96vw;max-height:88vh}.zoom div{color:#fff;font-size:14px}
+.fm{display:grid;grid-template-columns:150px 1fr;gap:6px 10px;align-items:center}.fm label{font-size:12.5px;color:var(--g)}
+.fm input,.fm select,.fm textarea{font:inherit;padding:6px 8px;border:1px solid var(--bd);border-radius:8px;width:100%}.fm input.ch{border-color:var(--o);background:#FFF8EC}
+.btn{background:var(--v2);color:#fff;border:0;border-radius:8px;padding:8px 14px;font:600 14px system-ui;cursor:pointer}.btn:disabled{opacity:.5}
+.btn2{background:#fff;color:var(--v);border:1px solid var(--v2);border-radius:8px;padding:7px 12px;font:600 13px system-ui;cursor:pointer}
+.btnr{background:#fff;color:var(--r);border:1px solid var(--r);border-radius:8px;padding:7px 12px;font:600 13px system-ui;cursor:pointer}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.info{background:var(--cl);border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px}
+.warn{background:#FFF3E0;border-left:4px solid var(--o);padding:8px 10px;border-radius:6px;margin:8px 0;font-size:13px}
+.hist{font-size:12px;color:var(--g)}.hist div{border-left:3px solid var(--bd);padding-left:6px;margin:3px 0}
+#map{height:calc(100vh - 140px);border-radius:12px}.mapwrap{padding:12px 14px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--v);color:#fff;padding:10px 16px;border-radius:10px;z-index:200;font-weight:600}
+.toast.e{background:var(--r)}.empty{color:var(--g);padding:30px;text-align:center}
+.ren{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.ren input{flex:1;min-width:220px;font:inherit;padding:8px;border:1px solid var(--bd);border-radius:8px}
+.leg{display:flex;gap:10px;flex-wrap:wrap;font-size:12.5px;margin-bottom:6px}.leg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px}
+</style></head><body>
+<header><h1>🌿 Débriefing plantes – EIE BESS Fajawe, Ouvéa</h1><span class="st" id="st">Chargement…</span><span class="sp"></span>
+<span class="st" id="who"></span><button class="hb" id="bwho">Changer de nom</button><button class="hb" id="brf">↻ Actualiser</button></header>
+<nav class="tabs" id="tabs"></nav>
+<div id="main"></div>
+<datalist id="dl"></datalist>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="flore.js"></script><script src="prot.js"></script>
+<script>
+const SB_URL='https://bdpbsdqxrrtvzdocezzy.supabase.co';const SB_KEY='sb_publishable_wS72835MaYCHp0BqBrR0Nw_FG8a7CbN';const TEAM='OUVEA-D5DC1E';
+const ENV={"Agave americana": ["Agavaceae", "Cult. Rare", "Fort"], "Furcraea foetida": ["Agavaceae", "Subsp. Peu commun", "Fort"], "Schinus terebenthifolius": ["Anacardiaceae", "Subsp. ?", "Fort"], "Brassaia actinophylla": ["Araliaceae", "Subsp. Assez commun", "Fort"], "Asparagus setaceus": ["Asparagaceae", "Adv. Assez commun", "Faible"], "Mikania micrantha": ["Asteraceae", "? ?", "Indéterminé"], "Pluchea odorata": ["Asteraceae", "Nat. Commun", "Très fort"], "Pseudogynoxys chenopodioides": ["Asteraceae", "Subsp. Rare", "Indéterminé"], "Sphagneticola trilobata": ["Asteraceae", "Adv. Peu commun", "Moyen à fort"], "Spathodea campanulata": ["Bignoniaceae", "Subsp. Rare", "Faible à moyen"], "Tecoma stans": ["Bignoniaceae", "Adv. Commun", "Fort"], "Opuntia stricta": ["Cactaceae", "Cult. Rare", "Faible à moyen"], "Delonix regia": ["Caesalpiniaceae", "Adv. Commun", "Faible"], "Senna tora": ["Caesalpiniaceae", "Adv. Peu commun", "Faible"], "Tradescantia spathacea": ["Commelinaceae", "Subsp. Assez commun", "Fort"], "Tradescantia zebrina": ["Commelinaceae", "Subsp. Peu commun", "Faible à moyen"], "Kalanchoe daigremontiana": ["Crassulaceae", "Subsp. Rare", "Faible à moyen"], "Kalanchoe delagoensis": ["Crassulaceae", "Adv. Assez commun", "Faible"], "Kalanchoe pinnata": ["Crassulaceae", "Adv. Assez commun", "Moyen à fort"], "Cyperus involucratus": ["Cyperaceae", "Adv. Peu commun", "Faible à moyen"], "Ricinus communis": ["Euphorbiaceae", "Adv. Commun", "Moyen"], "Flemingia strobilifera": ["Fabaceae", "Subsp. Rare", "Moyen"], "Neonotonia wightii": ["Fabaceae", "Adv. Peu commun", "Moyen"], "Stylosanthes scabra": ["Fabaceae", "Adv. Rare", "Faible"], "Clerodendrum buchananii var. fallax": ["Lamiaceae", "Nat. Assez commun", "Faible"], "Hyptis pectinata": ["Lamiaceae", "Adv. Rare", "Faible"], "Ocimum gratissimum": ["Lamiaceae", "Adv. Rare", "Faible à moyen"], "Melia azedarach": ["Meliaceae", "Adv. Assez commun", "Moyen"], "Adenanthera pavonina": ["Mimosaceae", "Nat. Assez commun", "Moyen"], "Leucaena leucocephala": ["Mimosaceae", "Adv. Assez commun", "Moyen à fort"], "Mimosa diplotricha var. diplotricha": ["Mimosaceae", "Adv. ?", "Faible à moyen"], "Psidium cattleianum": ["Myrtaceae", "Cult. Très rare", "Très fort"], "Syzygium cumini": ["Myrtaceae", "Adv. Assez commun", "Fort"], "Syzygium jambos": ["Myrtaceae", "Subsp. Rare", "Moyen à fort"], "Passiflora maliformis": ["Passifloraceae", "Subsp. Assez commun", "Faible à moyen"], "Passiflora suberosa": ["Passifloraceae", "Nat. Commun", "Moyen"], "Turnera ulmifolia": ["Passifloraceae", "Nat. Commun", "Moyen"], "Rivina humilis": ["Phytolaccaceae", "Nat. Commun", "Moyen"], "Arundo donax": ["Poaceae", "Adv. Peu commun", "Moyen à fort"], "Megathyrsus maximus": ["Poaceae", "Adv. Commun", "Moyen"], "Phyllostachys cf. flexuosa": ["Poaceae", "Subsp. Rare", "Moyen à fort"], "Stenotaphrum secundatum": ["Poaceae", "Adv. Commun", "Moyen à fort"], "Cestrum nocturnum": ["Solanaceae", "Cult. Rare", "Moyen"], "Solanum torvum": ["Solanaceae", "Adv. Assez commun", "Moyen à fort"], "Typha domingensis": ["Typhaceae", "Nat. Commun", "Fort"], "Lantana camara": ["Verbenaceae", "Nat. Commun", "Fort"]};const PTS=[[-20.652558, 166.550968, "OUV-PQ1", "Piquet 1 - Coin SO emprise, cote route/centrale"], [-20.652627, 166.551196, "OUV-PQ2", "Piquet 2 - Coin SE emprise, cote route"], [-20.652386, 166.551026, "OUV-PQ3", "Piquet 3 - Limite M1/M2 ouest"], [-20.652454, 166.551255, "OUV-PQ4", "Piquet 4 - Limite M1/M2 est - coin NE de M1 (petit carre 5x5 M1)"], [-20.652214, 166.551084, "OUV-PQ5", "Piquet 5 - Limite M2/M3 ouest"], [-20.652282, 166.551313, "OUV-PQ6", "Piquet 6 - Limite M2/M3 est - coin NE de M2 (petit carre 5x5 M2)"], [-20.652042, 166.551143, "OUV-PQ7", "Piquet 7 - Coin NO emprise"], [-20.65211, 166.551371, "OUV-PQ8", "Piquet 8 - Coin NE emprise - coin NE de M3 (petit carre 5x5 M3)"], [-20.652262, 166.551556, "OUV-P1A", "Coin A placette temoin P1 25x20 m (SO)"], [-20.65209, 166.551614, "OUV-P1B", "Coin B placette temoin P1 25x20 m (NO)"], [-20.652158, 166.551843, "OUV-P1C", "Coin C placette temoin P1 25x20 m (NE) - petit carre 5x5 P1"], [-20.65233, 166.551784, "OUV-P1D", "Coin D placette temoin P1 25x20 m (SE)"], [-20.652506, 166.551111, "OUV-F1", "Poste fourmis F1 = centre carre M1"], [-20.652334, 166.551169, "OUV-F2", "Poste fourmis F2 = centre carre M2"], [-20.652162, 166.551228, "OUV-F3", "Poste fourmis F3 = centre carre M3"], [-20.65221, 166.551699, "OUV-F4", "Poste fourmis F4 = centre placette P1"], [-20.652334, 166.551169, "OUV-O1", "Point ecoute oiseaux O1 = centre emprise"]];
+const TYPES={espece:'Espèces (fiche 1)',arbre:'Arbres (fiche 2)',jeunes:'Jeunes plants (fiche 3)',herbier:'Herbier (fiche 4)',protegee:'Protégées (fiche 5)',eee:'Envahissantes (fiche 6)',carre:'Description des carrés (fiche 0)'};
+const TCOL={espece:'#2E7D4F',arbre:'#8D6E63',jeunes:'#9CCC65',herbier:'#5D4037',protegee:'#B03A2E',eee:'#F39C12',carre:'#1F5C99'};
+const FIELDS={espece:['espece','carre','quart','code_0_1','code_1_5','code_5','type_plante','statut','herbier','nb_pieds','stade_p','remarque'],
+ arbre:['espece','carre','quart','num','tige','tour','hauteur','etat','cavite','statut','remarque'],
+ jeunes:['espece','carre','plantules','jeunes','gaules','broute','herbier','remarque'],
+ herbier:['num','nom','carre','quart','fleurs','fruits','remarque'],
+ protegee:['espece','carre','quart','stade','nombre','remarque'],
+ eee:['espece','carre','quart','recouvrement','remarque'],
+ carre:['vegetation','canopee_h','ouverture','substrat','litiere_centre','litiere_ne','litiere_no','litiere_se','litiere_so','route_m2','perturbations','remarque']};
+const LAB={espece:'Espèce',nom:'Nom',carre:'Carré',quart:'Quart',code_0_1:'Code 0–1 m',code_1_5:'Code 1–5 m',code_5:'Code > 5 m',type_plante:'Type',statut:'Statut (terrain)',herbier:'N° herbier',nb_pieds:'Nb de pieds',stade_p:'Stade',remarque:'Remarque',num:'N°',tige:'Tige',tour:'Tour (cm)',hauteur:'Hauteur (m)',etat:'État',cavite:'Cavité',plantules:'Plantules',jeunes:'Jeunes',gaules:'Gaules',broute:'Abrouti',fleurs:'Fleurs',fruits:'Fruits',stade:'Stade',nombre:'Nombre de pieds',recouvrement:'Recouvrement',vegetation:'Végétation',canopee_h:'Canopée (m)',ouverture:'Ouverture (%)',substrat:'Substrat',litiere_centre:'Litière centre (cm)',litiere_ne:'Litière NE',litiere_no:'Litière NO',litiere_se:'Litière SE',litiere_so:'Litière SO',route_m2:'Route (m²)',perturbations:'Perturbations'};
+const PLANT=['espece','arbre','jeunes','herbier','protegee','eee','carre'];
+const STL={L:'Endémique Loyauté',N:'Endémique NC',I:'Indigène',A:'Introduite ancienne',M:'Introduite moderne'};
+const GROUPES={1:'Endémique Loyauté',2:'Rare à Ouvéa',3:'Peu commune à commune',4:'Citée, non revue',5:'Non connue à Ouvéa'};
+let DB={},PH=[],PHBY={},LAST='1970-01-01T00:00:00Z',TAB='noms',SEL=null,SELN=null,WHO='';
+const $=s=>document.querySelector(s);
+function h(t,a,...c){const e=document.createElement(t);for(const k in a||{}){const v=a[k];if(v==null||v===false)continue;if(k.startsWith('on'))e[k]=v;else if(k==='style')e.style.cssText=v;else e.setAttribute(k,v===true?'':v)}for(const x of c.flat(9))if(x!=null&&x!==false)e.append(x.nodeType?x:document.createTextNode(String(x)));return e}
+function ap(e,...c){e.append(...c.flat(9).filter(x=>x!=null&&x!==false))}
+function toast(m,err){const t=h('div',{class:'toast'+(err?' e':'')},m);document.body.append(t);setTimeout(()=>t.remove(),err?5000:2200)}
+const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim();
+try{WHO=localStorage.getItem('revue_who')||''}catch(e){}
+function askWho(){const w=prompt('Votre nom (il sera noté dans l’historique de chaque correction) :',WHO||'');if(w&&w.trim()){WHO=w.trim();try{localStorage.setItem('revue_who',WHO)}catch(e){}}$('#who').textContent=WHO?'Correcteur : '+WHO:''}
+async function api(path,opt={}){const r=await fetch(SB_URL+'/rest/v1/'+path,{...opt,headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'x-team-key':TEAM,'Content-Type':'application/json',...(opt.headers||{})}});
+ if(!r.ok)throw new Error(r.status+' '+(await r.text()).slice(0,160));if(r.status===204||r.status===201)return null;return r.json()}
+
+/* ---------- référentiels : Butaud 2014, espèces protégées, envahissantes ---------- */
+const FI=new Map(),FB=new Map();(window.FLORE||[]).forEach(f=>{FI.set(norm(f[0]),f);const b=norm(f[0]).split(' ').slice(0,2).join(' ');if(!FB.has(b))FB.set(b,f)});
+const PI=new Map(),PB=new Map();(window.PROT||[]).forEach(p=>{PI.set(norm(p[0]),p);const b=norm(p[0]).split(' ').slice(0,2).join(' ');if(!PB.has(b))PB.set(b,p)});
+const EI=new Map(Object.entries(ENV).map(([k,v])=>[norm(k),[k,...v]]));
+const UNK=/(\bsp\b\.?|\bspp\b|indet|indét|inconnu|\?|provisoire)/i;
+function stat(n){const k=norm(n);if(!k)return{vide:1};const bn=k.split(' ').slice(0,2).join(' ');const unk=UNK.test(n)||k.split(' ').length<2;
+ const F=FI.get(k)||(!unk&&FB.get(bn)),P=PI.get(k)||(!unk&&PB.get(bn)),E=EI.get(k)||(!unk&&EI.get(bn));
+ return{F,P,E,unk,exact:!!(FI.get(k)||PI.get(k)||EI.get(k)),known:!!(F||P||E)}}
+function badges(n){const s=stat(n);const out=[];if(s.vide)return out;
+ if(s.P)out.push(h('span',{class:'b bP',title:'Groupe '+s.P[2]+' – '+GROUPES[s.P[2]]},'🛡 Protégée G'+s.P[2]));
+ if(s.E)out.push(h('span',{class:'b bE'},'⚠ Envahissante ('+String(s.E[3]||'').toLowerCase()+')'));
+ if(s.F){const c={L:'bL',N:'bN',I:'bI',A:'bA',M:'bA'}[s.F[2]]||'bI';out.push(h('span',{class:'b '+c},STL[s.F[2]]||s.F[2]))}
+ if(s.unk)out.push(h('span',{class:'b bX'},'Non identifiée'));else if(!s.known)out.push(h('span',{class:'b bX',title:'Nom absent de Butaud 2014 : orthographe ou identification à vérifier'},'? Nom inconnu'));
+ else if(!s.exact)out.push(h('span',{class:'b bI',title:'Trouvé par genre + espèce seulement'},'≈ nom approché'));
+ return out}
+function enrichD(d){const n=d.type==='herbier'?d.nom:d.espece;const s=stat(n);
+ d.famille=(s.F&&s.F[1])||(s.P&&s.P[1])||(s.E&&s.E[1])||'';d.endemisme=s.F?(STL[s.F[2]]||''):(s.E?'Introduite':'');
+ d.protection=s.P?`Protégée G${s.P[2]} – ${GROUPES[s.P[2]]}`:'';d.envahissante=s.E?`Impact ${s.E[3]}`:'';d.abondance_ouvea=(s.F&&s.F[5])||''}
+const nameOf=r=>r.type==='herbier'?(r.nom||''):r.type==='carre'?'':(r.espece||'');
+const nk=r=>r.type==='herbier'?'nom':'espece';
+
+/* ---------- chargement / synchro ---------- */
+async function load(full){$('#st').textContent='Synchronisation…';
+ try{const since=full?'1970-01-01T00:00:00Z':LAST;let more=true,off=0,n=0;
+  while(more){const rows=await api(`releves?select=id,type,data,updated_at,deleted&type=in.(${PLANT.join(',')})&updated_at=gt.${encodeURIComponent(since)}&order=updated_at.asc&limit=1000&offset=${off}`);
+   for(const x of rows){const d=x.data||{};d.id=x.id;d.type=x.type;if(x.deleted||d.deleted)delete DB[x.id];else DB[x.id]=d;if(x.updated_at>LAST)LAST=x.updated_at;n++}
+   more=rows.length===1000;off+=1000}
+  if(full||n){const ph=await api('photos?select=id,rec_id,label,obs,ts&order=ts.asc&limit=10000');PH=ph;PHBY={};ph.forEach(p=>{(PHBY[p.rec_id]=PHBY[p.rec_id]||[]).push(p)})}
+  $('#st').textContent=`${Object.keys(DB).length} saisies plantes · ${PH.length} photos (équipe) · à jour ${new Date().toLocaleTimeString('fr-FR').slice(0,5)}`;
+  if(full||n){fillDL();render(true)}
+ }catch(e){$('#st').textContent='⚠ Pas de connexion au serveur : '+e.message}}
+function fillDL(){const s=new Set((window.FLORE||[]).map(f=>f[0]));(window.PROT||[]).forEach(p=>s.add(p[0]));Object.keys(ENV).forEach(k=>s.add(k));Object.values(DB).forEach(r=>{const n=nameOf(r);if(n)s.add(n)});
+ const dl=$('#dl');dl.innerHTML='';[...s].sort((a,b)=>a.localeCompare(b)).forEach(n=>dl.append(h('option',{value:n})))}
+const live=t=>Object.values(DB).filter(r=>!t||r.type===t);
+function photosOf(r){const ids=new Set((r.photos||[]).filter(Boolean));const out=[];const seen=new Set();
+ for(const p of PHBY[r.id]||[]){out.push(p);seen.add(p.id)}for(const id of ids)if(!seen.has(id))out.push({id,rec_id:r.id,label:'',obs:r.obs});
+ if(r.id.startsWith('p_')||r.id.startsWith('e_')||r.id.startsWith('h_')){const o=DB[r.id.slice(2)];if(o)for(const p of photosOf(o))if(!seen.has(p.id)){out.push(p);seen.add(p.id)}}
+ return out}
+
+/* ---------- photos (chargées à la demande) ---------- */
+const PC={},PQ=[];let PBUSY=0;
+function getPh(id){if(PC[id])return PC[id];PC[id]=new Promise(ok=>{PQ.push([id,ok]);pump()});return PC[id]}
+function pump(){while(PBUSY<4&&PQ.length){const [id,ok]=PQ.shift();PBUSY++;api(`photos?id=eq.${encodeURIComponent(id)}&select=data`).then(r=>ok(r&&r[0]?r[0].data:null)).catch(()=>ok(null)).finally(()=>{PBUSY--;pump()})}}
+function phTile(p,cap){const img=h('img',{alt:''});const t=h('div',{class:'ph',title:p.label||''},img,h('span',{},cap||p.label||(p.obs||'').split(' ')[0]||'photo'));let src=null;
+ const io=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){io.disconnect();getPh(p.id).then(d=>{if(d){src=d;img.src=d}else t.lastChild.textContent='(photo absente du serveur)'})}},{rootMargin:'300px'});io.observe(t);
+ t.onclick=()=>{if(!src)return;const z=h('div',{class:'zoom',onclick:()=>z.remove()},h('img',{src}),h('div',{},(cap||'')+' '+(p.label||'')+' · '+(p.obs||'')+(p.ts?' · '+new Date(p.ts).toLocaleString('fr-FR').slice(0,16):'')));document.body.append(z)};return t}
+
+/* ---------- enregistrement des corrections (non destructif : historique dans chaque saisie) ---------- */
+async function saveRec(id,changes,note){const r=DB[id];if(!r)throw new Error('saisie introuvable');const d=JSON.parse(JSON.stringify(r));const now=new Date().toISOString();d.hist=d.hist||[];let ch=0;
+ for(const [k,v] of Object.entries(changes)){const av=d[k]??'';if(String(av)===String(v??''))continue;d.hist.push({u:now,par:WHO||'?',champ:k,avant:av,apres:v});d[k]=v;ch++}
+ if(!ch)return false;if(('espece' in changes||'nom' in changes)&&d.type!=='carre')enrichD(d);
+ d.u=now;d.remarque_correction=(note||'Corrigé en débriefing')+` – ${WHO||'?'} ${now.slice(0,10)}`;
+ const row={id:d.id,type:d.type,data:d,obs:d.obs||'',dev:d.dev||'',ts:d.ts||now,deleted:!!d.deleted};
+ await api('releves?on_conflict=id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify([row])});
+ if(d.deleted)delete DB[id];else DB[id]=d;
+ if(d.type==='espece')await mirrors(d,note);return true}
+const CODEV={'':0,'r':1,'+':2,'1':3,'2':4,'3':5,'4':6,'5':7};
+async function mirrors(rec,note){const s=stat(rec.espece);const dead=!!rec.deleted;
+ const doM=async(id,type,data,keep)=>{const ex=DB[id];if(!keep){if(ex)await saveRec(id,{deleted:true},(note||'')+' (copie automatique retirée)');return}
+  if(ex){const ch={};for(const k of Object.keys(data))if(String(ex[k]??'')!==String(data[k]??''))ch[k]=data[k];if(Object.keys(ch).length)await saveRec(id,ch,note);return}
+  const now=new Date().toISOString();const d=Object.assign({id,type,ts:rec.ts,date:rec.date,obs:rec.obs,dev:rec.dev,auto:'fiche 1',u:now,hist:[{u:now,par:WHO||'?',champ:'création',avant:'',apres:'copie créée au débriefing'}]},data);
+  if(type!=='carre')enrichD(d);await api('releves?on_conflict=id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify([{id,type,data:d,obs:d.obs||'',dev:d.dev||'',ts:d.ts||now,deleted:false}])});DB[id]=d};
+ await doM('p_'+rec.id,'protegee',{espece:s.P?s.P[0]:rec.espece,carre:rec.carre,quart:rec.quart,nombre:rec.nb_pieds||'',stade:rec.stade_p||''},!dead&&!!s.P);
+ const best=['code_0_1','code_1_5','code_5'].map(k=>rec[k]||'').sort((a,b)=>(CODEV[b]||0)-(CODEV[a]||0))[0];
+ await doM('e_'+rec.id,'eee',{espece:rec.espece,carre:rec.carre,quart:rec.quart,recouvrement:best},!dead&&!!s.E);
+ const hk=!dead&&!!rec.herbier&&!live('herbier').some(x=>x.num===rec.herbier&&x.id!=='h_'+rec.id);
+ await doM('h_'+rec.id,'herbier',{num:rec.herbier||'',nom:rec.espece,carre:rec.carre,quart:rec.quart},hk)}
+
+/* ---------- vues ---------- */
+const TABS=[['noms','📋 Par nom d’espèce'],['saisies','🗂 Toutes les saisies'],['photos','📷 Photos'],['carte','🗺 Carte'],['aide','❔ Mode d’emploi']];
+function drawTabs(){const t=$('#tabs');t.innerHTML='';TABS.forEach(([k,l])=>t.append(h('button',{class:TAB===k?'on':'',onclick:()=>{TAB=k;render(true)}},l)))}
+const F={type:'',carre:'',q:'',chk:false,sort:'nom',ptype:'',pcarre:''};
+function render(full){drawTabs();const m=$('#main');
+ if(TAB==='carte'){if(full||!$('#map')){m.innerHTML='';ap(m,h('div',{class:'mapwrap'},legend(),h('div',{id:'map'})));drawMap()}return}
+ if(TAB==='aide'){m.innerHTML='';ap(m,h('div',{class:'wrap',style:'grid-template-columns:1fr'},aide()));return}
+ const keepL=$('.left')?.scrollTop||0;m.innerHTML='';const L=h('div',{class:'pane left'}),Rp=h('div',{class:'pane right',id:'det'});ap(m,h('div',{class:'wrap'},L,Rp));
+ if(TAB==='noms'){vNoms(L);if(SELN!=null)detNom(SELN);else if(SEL&&DB[SEL])detRec(SEL);else Rp.append(h('div',{class:'empty'},'Choisir un nom à gauche : on voit toutes ses saisies et ses photos, et on peut le renommer partout d’un coup.'))}
+ if(TAB==='saisies'){vSaisies(L);if(SEL&&DB[SEL])detRec(SEL);else Rp.append(h('div',{class:'empty'},'Choisir une saisie à gauche pour voir ses photos et la corriger.'))}
+ if(TAB==='photos'){m.innerHTML='';ap(m,h('div',{class:'wrap',style:'grid-template-columns:1fr'},vPhotos()));return}
+ L.scrollTop=keepL}
+function fltBar(onch,withType){const cs=['','M1','M2','M3','P1'];return h('div',{class:'flt'},
+ withType?h('select',{onchange:e=>{F.type=e.target.value;onch()}},h('option',{value:''},'Toutes les fiches'),Object.entries(TYPES).map(([k,l])=>h('option',{value:k,selected:F.type===k},l))):null,
+ h('select',{onchange:e=>{F.carre=e.target.value;onch()}},cs.map(c=>h('option',{value:c,selected:F.carre===c},c||'Tous les carrés'))),
+ h('input',{type:'search',placeholder:'Rechercher un nom, un n°…',value:F.q,oninput:e=>{F.q=e.target.value;clearTimeout(window._qt);window._qt=setTimeout(onch,250)}}),
+ h('label',{},h('input',{type:'checkbox',checked:F.chk,onchange:e=>{F.chk=e.target.checked;onch()}}),'Seulement « à vérifier »'))}
+function dupArbres(){const m={};live('arbre').forEach(r=>{const k=`${r.carre}|${r.num}|${r.tige||''}`;(m[k]=m[k]||[]).push(r.id)});const s=new Set();Object.values(m).forEach(a=>{if(a.length>1)a.forEach(x=>s.add(x))});return s}
+function vNoms(L){const g={};
+ for(const r of Object.values(DB)){if(r.type==='carre')continue;const n=nameOf(r).trim();const k=norm(n)||'(sans nom)';const o=g[k]||(g[k]={k,n:n||'(sans nom)',ids:[],t:{},car:new Set(),ph:0});o.ids.push(r.id);o.t[r.type]=(o.t[r.type]||0)+1;o.car.add(r.carre||'?');o.ph+=photosOf(r).length}
+ let rows=Object.values(g);const q=norm(F.q);
+ rows=rows.filter(o=>(!q||norm(o.n).includes(q))&&(!F.carre||o.car.has(F.carre))&&(!F.chk||(()=>{const s=stat(o.n);return s.unk||!s.known||!s.exact})()));
+ const srt={nom:(a,b)=>a.n.localeCompare(b.n),n:(a,b)=>b.ids.length-a.ids.length,v:(a,b)=>{const va=x=>{const s=stat(x.n);return s.unk?0:!s.known?1:!s.exact?2:3};return va(a)-va(b)||a.n.localeCompare(b.n)}}[F.sort]||((a,b)=>0);rows.sort(srt);
+ ap(L,h('h3',{style:'margin-top:0'},`${rows.length} noms d’espèces`),fltBar(()=>render()),
+  h('table',{},h('thead',{},h('tr',{},h('th',{onclick:()=>{F.sort='nom';render()}},'Nom ▾'),h('th',{onclick:()=>{F.sort='v';render()}},'Statut / à vérifier ▾'),h('th',{class:'n',onclick:()=>{F.sort='n';render()}},'Saisies ▾'),h('th',{},'Carrés'),h('th',{class:'n'},'📷'))),
+   h('tbody',{},rows.map(o=>h('tr',{class:'it'+(SELN===o.k?' sel':''),onclick:()=>{SELN=o.k;SEL=null;render()}},h('td',{},h('b',{},o.n)),h('td',{},badges(o.n)),
+    h('td',{class:'n',title:Object.entries(o.t).map(([t,c])=>TYPES[t]+' : '+c).join('\n')},o.ids.length),h('td',{},[...o.car].sort().join(' ')),h('td',{class:'n'},o.ph||''))))))}
+function detNom(k){const R=$('#det');const recs=Object.values(DB).filter(r=>r.type!=='carre'&&(norm(nameOf(r))||'(sans nom)')===k);if(!recs.length){SELN=null;ap(R,h('div',{class:'empty'},'Ce nom n’existe plus (renommé).'));return}
+ const n=nameOf(recs[0])||'(sans nom)';const s=stat(n);const inp=h('input',{list:'dl',value:n,placeholder:'Nouveau nom (taper les 1res lettres)'});const prev=h('span',{});
+ inp.oninput=()=>{prev.innerHTML='';badges(inp.value).forEach(b=>prev.append(b))};
+ const go=h('button',{class:'btn',onclick:async()=>{const nv=inp.value.trim();if(!nv||nv===n)return;if(!WHO)askWho();
+  if(!confirm(`Renommer « ${n} » en « ${nv} » dans ${recs.length} saisie(s) ?\n(Chaque saisie garde l’ancien nom dans son historique.)`))return;go.disabled=true;let i=0;
+  try{for(const r of recs){go.textContent=`… ${++i}/${recs.length}`;if(DB[r.id])await saveRec(r.id,{[nk(r)]:nv},`Renommé « ${n} » → « ${nv} »`)}toast(`✔ ${recs.length} saisie(s) renommée(s)`);SELN=norm(nv);fillDL();render()}catch(e){toast('Erreur : '+e.message,true);go.disabled=false;go.textContent='Renommer partout'}}},'Renommer partout');
+ ap(R,h('h2',{},n),h('div',{},badges(n)),
+  s.F||s.P||s.E?h('div',{class:'info'},[s.F?`${s.F[1]} · ${STL[s.F[2]]||s.F[2]} · ${s.F[3]||''} · à Ouvéa (Butaud 2014) : ${s.F[5]||'—'}${s.F[4]===0?' · ⚠ non signalée à Ouvéa':''}`:'',s.P?` · Protégée groupe ${s.P[2]} (${GROUPES[s.P[2]]})`:'',s.E?` · Envahissante, impact ${s.E[3]}`:''].join('')):h('div',{class:'warn'},s.unk?'Nom provisoire : chercher le n° d’herbier correspondant, puis renommer.':'Nom absent de la liste de Butaud 2014 : vérifier l’orthographe ou l’identification.'),
+  h('h3',{},'Renommer ce nom partout'),h('div',{class:'ren'},inp,go),prev);
+ const phs=recs.flatMap(r=>photosOf(r).map(p=>[p,`${r.carre||''}${r.quart||''} ${r.type==='arbre'?'n°'+(r.num||'')+(r.tige||''):r.type==='herbier'?r.num:''}`]));
+ ap(R,h('h3',{},`Photos (${phs.length})`),phs.length?h('div',{class:'phs'},phs.slice(0,60).map(([p,c])=>phTile(p,c))):h('p',{class:'mut'},'Aucune photo liée à ces saisies.'));
+ ap(R,h('h3',{},`Saisies (${recs.length})`),recTable(recs.sort((a,b)=>(a.carre||'').localeCompare(b.carre||'')||String(a.type).localeCompare(b.type)),true))}
+function recTable(recs,short){const dups=dupArbres();return h('table',{},h('thead',{},h('tr',{},h('th',{},'Fiche'),h('th',{},'Carré'),short?null:h('th',{},'Nom'),h('th',{},'Détail'),h('th',{},'Par'),h('th',{class:'n'},'📷'))),
+ h('tbody',{},recs.map(r=>h('tr',{class:'it'+(SEL===r.id?' sel':''),onclick:()=>{SEL=r.id;if(TAB==='noms'){SELN=null}render()}},
+  h('td',{},h('span',{class:'b',style:`background:${TCOL[r.type]}22;color:${TCOL[r.type]}`},TYPES[r.type].split(' (')[0])),h('td',{},(r.carre||'')+(r.quart||'')),
+  short?null:h('td',{},h('b',{},nameOf(r)||'—'),' ',badges(nameOf(r))),h('td',{class:'mut'},detail(r),dups.has(r.id)?h('span',{class:'b bX'},'n° en double'):null,r.hist&&r.hist.length?h('span',{class:'b bN'},'✏ corrigé'):null),
+  h('td',{class:'mut'},(r.obs||'').split(' ')[0]),h('td',{class:'n'},photosOf(r).length||'')))))}
+function detail(r){switch(r.type){case 'espece':return [r.code_0_1,r.code_1_5,r.code_5].map(x=>x||'–').join(' / ')+(r.herbier?' · herb. '+r.herbier:'')+(r.nb_pieds?' · '+r.nb_pieds+' pieds':'');
+ case 'arbre':return `n°${r.num||'?'}${r.tige||''} · tour ${r.tour||'?'} cm · h ${r.hauteur||'?'} m`;case 'jeunes':return `plantules ${r.plantules||0} · jeunes ${r.jeunes||0} · gaules ${r.gaules||0}`;
+ case 'herbier':return r.num||'';case 'protegee':return `${r.nombre||'?'} pied(s) ${r.stade||''}`;case 'eee':return 'recouvrement '+(r.recouvrement||'?');case 'carre':return `${r.vegetation||''} · canopée ${r.canopee_h??'?'} m`}return ''}
+function vSaisies(L){const q=norm(F.q);const dups=dupArbres();
+ let rows=Object.values(DB).filter(r=>(!F.type||r.type===F.type)&&(!F.carre||r.carre===F.carre)&&(!q||norm(nameOf(r)+' '+(r.num||'')+' '+(r.herbier||'')+' '+(r.remarque||'')).includes(q)));
+ if(F.chk)rows=rows.filter(r=>{if(dups.has(r.id))return true;if(r.type==='carre')return r.canopee_h==0;const s=stat(nameOf(r));return s.unk||!s.known});
+ rows.sort((a,b)=>(a.carre||'').localeCompare(b.carre||'')||String(a.quart||'').localeCompare(String(b.quart||''))||a.type.localeCompare(b.type)||(+a.num||0)-(+b.num||0)||nameOf(a).localeCompare(nameOf(b)));
+ ap(L,h('h3',{style:'margin-top:0'},`${rows.length} saisies`),fltBar(()=>render(),true),recTable(rows.slice(0,600),false),rows.length>600?h('p',{class:'mut'},'600 premières lignes : affiner le filtre.'):null)}
+function detRec(id){const R=$('#det');const r=DB[id];if(!r){ap(R,h('div',{class:'empty'},'Saisie supprimée.'));return}
+ const fl=FIELDS[r.type]||[];const ins={};
+ const fm=h('div',{class:'fm'},fl.map(k=>{const v=r[k]??'';let el;
+  if(k==='espece'||k==='nom'){el=h('input',{list:'dl',value:v});const pv=h('div',{style:'grid-column:2'});const up=()=>{pv.innerHTML='';badges(el.value).forEach(b=>pv.append(b))};el.addEventListener('input',up);up();ins[k]=el;return [h('label',{},LAB[k]||k),el,h('span'),pv]}
+  if(k==='remarque')el=h('textarea',{rows:2},String(v));else if(typeof v==='boolean'){el=h('select',{},h('option',{value:'true',selected:v===true},'oui'),h('option',{value:'false',selected:v!==true},'non'))}else el=h('input',{value:v});
+  ins[k]=el;el.addEventListener('input',()=>el.classList.toggle('ch',String(el.value)!==String(v)));return [h('label',{},LAB[k]||k),el]}));
+ const sv=h('button',{class:'btn',onclick:async()=>{if(!WHO)askWho();const ch={};for(const [k,el] of Object.entries(ins)){let nv=el.value;const ov=r[k];if(typeof ov==='boolean')nv=nv==='true';else if(typeof ov==='number'&&nv!==''&&!isNaN(+nv))nv=+nv;if(String(nv)!==String(ov??''))ch[k]=nv}
+  if(!Object.keys(ch).length){toast('Rien n’a changé');return}sv.disabled=true;try{await saveRec(id,ch,'Corrigé en débriefing');toast('✔ Enregistré – les téléphones recevront la correction à leur synchro');fillDL();render()}catch(e){toast('Erreur : '+e.message,true);sv.disabled=false}}},'💾 Enregistrer la correction');
+ const del=h('button',{class:'btnr',onclick:async()=>{if(!confirm('Supprimer cette saisie ?\nElle est masquée partout mais reste récupérable dans la base (historique).'))return;if(!WHO)askWho();try{await saveRec(id,{deleted:true},'Supprimé en débriefing');SEL=null;toast('Saisie supprimée');render()}catch(e){toast('Erreur : '+e.message,true)}}},'🗑 Supprimer');
+ const map=r.lat?h('button',{class:'btn2',onclick:()=>{TAB='carte';render(true);setTimeout(()=>{MAP&&MAP.setView([r.lat,r.lon],21);MK[id]&&MK[id].openPopup()},200)}},'📍 Voir sur la carte'):null;
+ const phs=photosOf(r);
+ ap(R,h('h2',{},(nameOf(r)||TYPES[r.type])+(r.type==='arbre'?` – arbre n°${r.num||'?'}${r.tige||''}`:'')),h('div',{},h('span',{class:'b',style:`background:${TCOL[r.type]}22;color:${TCOL[r.type]}`},TYPES[r.type]),badges(nameOf(r))),
+  h('p',{class:'mut'},`Carré ${r.carre||'?'}${r.quart||''} · saisi le ${r.date||''} par ${r.obs||'?'}${r.lat?` · GPS ${(+r.lat).toFixed(6)}, ${(+r.lon).toFixed(6)} (±${r.prec||'?'} m)`:' · pas de GPS'}${r.auto?' · copie automatique de la fiche 1':''}`),
+  h('h3',{},`Photos (${phs.length})`),phs.length?h('div',{class:'phs'},phs.map(p=>phTile(p))):h('p',{class:'mut'},'Aucune photo.'),
+  h('h3',{},'Corriger'),r.auto?h('div',{class:'warn'},'Copie automatique : corriger plutôt la saisie d’origine dans la fiche 1 (la copie suit).'):null,fm,h('div',{class:'acts'},sv,del,map));
+ if(r.hist&&r.hist.length)ap(R,h('h3',{},'Historique des corrections'),h('div',{class:'hist'},r.hist.slice().reverse().map(x=>h('div',{},`${x.u.slice(0,16).replace('T',' ')} · ${x.par} · ${LAB[x.champ]||x.champ} : « ${x.avant} » → « ${x.apres} »`))))}
+function vPhotos(){const box=h('div',{class:'pane'});const q=norm(F.q);
+ const list=PH.map(p=>({p,r:DB[p.rec_id]})).filter(x=>x.r&&(!F.ptype||x.r.type===F.ptype)&&(!F.pcarre||x.r.carre===F.pcarre)&&(!q||norm(nameOf(x.r)+' '+(x.p.label||'')).includes(q))).reverse();
+ ap(box,h('div',{class:'flt'},h('select',{onchange:e=>{F.ptype=e.target.value;render()}},h('option',{value:''},'Toutes les fiches'),Object.entries(TYPES).map(([k,l])=>h('option',{value:k,selected:F.ptype===k},l))),
+  h('select',{onchange:e=>{F.pcarre=e.target.value;render()}},['','M1','M2','M3','P1'].map(c=>h('option',{value:c,selected:F.pcarre===c},c||'Tous les carrés'))),
+  h('input',{type:'search',placeholder:'Nom…',value:F.q,oninput:e=>{F.q=e.target.value;clearTimeout(window._qt);window._qt=setTimeout(render,300)}}),h('span',{class:'mut'},`${list.length} photos liées à une saisie plantes`)));
+ const g=h('div',{class:'phs'});list.slice(0,400).forEach(({p,r})=>{const t=phTile(p,`${r.carre||''}${r.quart||''} ${nameOf(r)||TYPES[r.type].split(' (')[0]}`);t.oncontextmenu=e=>{e.preventDefault();SEL=r.id;TAB='saisies';render()};ap(g,t)});
+ ap(box,g,h('p',{class:'mut'},'Clic = agrandir · clic droit = ouvrir la saisie pour la corriger.'));return box}
+let MAP=null,MK={};
+function legend(){return h('div',{class:'leg'},Object.entries(TYPES).filter(([k])=>k!=='carre').map(([k,l])=>h('span',{},h('i',{style:'background:'+TCOL[k]}),l)),h('span',{class:'mut'},'Clic sur un point = fiche · les carrés et piquets viennent du GPS Garmin'))}
+function drawMap(){if(!window.L||!L.map){document.getElementById('map').innerHTML='<p class="empty">Carte indisponible : pas d’accès internet à la bibliothèque de carte.</p>';return}if(MAP){MAP.remove();MAP=null}MK={};MAP=L.map('map',{maxZoom:22}).setView([-20.6524,166.5513],19);
+ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxNativeZoom:19,maxZoom:22,attribution:'Esri'}).addTo(MAP);
+ const P=Object.fromEntries(PTS.map(p=>[p[2],[p[0],p[1]]]));const poly=(ks,c,lab)=>{if(ks.every(k=>P[k]))L.polygon(ks.map(k=>P[k]),{color:c,weight:2,fill:false}).addTo(MAP).bindTooltip(lab,{permanent:true,direction:'center',className:''})};
+ poly(['OUV-PQ1','OUV-PQ2','OUV-PQ4','OUV-PQ3'],'#fff','M1');poly(['OUV-PQ3','OUV-PQ4','OUV-PQ6','OUV-PQ5'],'#fff','M2');poly(['OUV-PQ5','OUV-PQ6','OUV-PQ8','OUV-PQ7'],'#fff','M3');poly(['OUV-P1A','OUV-P1B','OUV-P1C','OUV-P1D'],'#FFE082','P1');
+ PTS.forEach(p=>L.circleMarker([p[0],p[1]],{radius:3,color:'#fff',weight:1,fillOpacity:1}).addTo(MAP).bindTooltip(p[2]+' – '+p[3]));
+ for(const r of Object.values(DB)){if(r.lat==null||r.type==='carre'||r.auto)continue;const m=L.circleMarker([+r.lat,+r.lon],{radius:6,color:'#fff',weight:1,fillColor:TCOL[r.type],fillOpacity:.95}).addTo(MAP);
+  const pop=h('div',{},h('b',{},nameOf(r)||TYPES[r.type]),h('br'),`${TYPES[r.type]} · ${r.carre||''}${r.quart||''} ${r.type==='arbre'?'n°'+(r.num||'')+(r.tige||''):''}`,h('br'),h('a',{href:'#',onclick:e=>{e.preventDefault();SEL=r.id;TAB='saisies';render(true)}},'Ouvrir / corriger'));
+  m.bindPopup(pop);MK[r.id]=m}}
+function aide(){return h('div',{class:'pane'},h('h2',{},'Mode d’emploi pour la réunion'),h('ol',{},
+ h('li',{},h('b',{},'Par nom d’espèce : '),'cocher « Seulement à vérifier » : les noms en rouge (non identifiés, absents de Butaud 2014) apparaissent. Cliquer un nom → ses photos et toutes ses saisies. Jean-Marie donne le bon nom → « Renommer partout » : toutes les fiches sont corrigées d’un coup (espèces, arbres, jeunes, herbier, protégées, envahissantes).'),
+ h('li',{},h('b',{},'Toutes les saisies : '),'filtrer par fiche et carré ; « à vérifier » montre aussi les n° d’arbres en double. Cliquer une ligne → photos + formulaire. Les champs modifiés passent en orange. « Enregistrer la correction ».'),
+ h('li',{},h('b',{},'Photos : '),'toutes les photos des saisies plantes, par carré. Clic droit sur une photo → ouvre la saisie.'),
+ h('li',{},h('b',{},'Carte : '),'chaque point GPS sur l’image satellite, avec les carrés M1-M3 et P1. Clic → ouvrir la saisie.'),
+ h('li',{},h('b',{},'Sécurité : '),'rien n’est effacé. Chaque correction garde l’ancienne valeur, l’auteur et l’heure (historique sous le formulaire). Une saisie « supprimée » est seulement masquée. Statut, famille, protection et envahissante se recalculent tout seuls quand on change un nom (Butaud 2014, liste des protégées PIL).'),
+ h('li',{},h('b',{},'À plusieurs : '),'la page se met à jour toute seule toutes les 20 s ; plusieurs ordinateurs peuvent corriger en même temps (pas la même saisie). Les téléphones reçoivent les corrections à leur prochaine synchro.')))}
+
+$('#bwho').onclick=askWho;$('#brf').onclick=()=>load(true);
+askWho();load(true);setInterval(()=>{if(!document.querySelector('.fm input.ch,.fm textarea.ch')&&TAB!=='carte')load(false)},20000);
+</script></body></html>
