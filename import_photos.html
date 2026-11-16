@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Import photos appareil DENV – EIE Ouvéa</title>
+<style>
+body{margin:0;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#F4F7F5;color:#1b2a21}
+header{background:#1F4D33;color:#fff;padding:12px 16px}header h1{font-size:18px;margin:0}
+main{max-width:760px;margin:0 auto;padding:16px}
+.card{background:#fff;border:1px solid #D5DED8;border-radius:12px;padding:14px;margin-bottom:12px}
+.btn{display:inline-block;background:#2E7D4F;color:#fff;border:0;border-radius:10px;padding:12px 18px;font:600 16px system-ui;cursor:pointer}
+.btn:disabled{opacity:.5}input[type=file]{display:none}
+.bar{height:14px;background:#E3EAE6;border-radius:7px;overflow:hidden;margin:10px 0}.bar i{display:block;height:100%;width:0;background:#2E7D4F;transition:width .2s}
+#log{font:12.5px/1.4 ui-monospace,Consolas,monospace;white-space:pre-wrap;max-height:300px;overflow:auto;background:#F7FAF8;padding:8px;border-radius:8px}
+.ok{color:#2E7D4F;font-weight:700}.err{color:#B03A2E;font-weight:700}
+</style></head><body>
+<header><h1>📷 Import des photos de l’appareil DENV</h1></header>
+<main>
+<div class="card"><b>Mode d’emploi</b><ol>
+<li>Cliquer sur « Choisir le dossier ».</li>
+<li>Sélectionner le dossier <b>Téléchargements\photos_DENV_import</b> (il contient les photos allégées et le fichier manifest.json), puis « Importer » / « Charger ».</li>
+<li>Attendre la fin (environ 2 à 5 minutes). On peut relancer sans risque : les photos déjà envoyées sont sautées.</li>
+</ol>
+<label class="btn" for="dir">📁 Choisir le dossier</label><input id="dir" type="file" webkitdirectory multiple>
+<p style="margin:10px 0 0;font-size:13px;color:#5B6B62">Si le choix de dossier ne marche pas : <label for="fs" style="color:#2E7D4F;text-decoration:underline;cursor:pointer">choisir tous les fichiers du dossier</label> (Ctrl + A).</p><input id="fs" type="file" multiple accept=".jpg,.jpeg,.json">
+</div>
+<div class="card"><div id="st">En attente du dossier…</div><div class="bar"><i id="pb"></i></div><div id="log"></div></div>
+</main>
+<script>
+const SB_URL='https://bdpbsdqxrrtvzdocezzy.supabase.co',SB_KEY='sb_publishable_wS72835MaYCHp0BqBrR0Nw_FG8a7CbN',TEAM='OUVEA-D5DC1E';
+const $=s=>document.querySelector(s);const log=(m,c)=>{const d=document.createElement('div');if(c)d.className=c;d.textContent=m;$('#log').prepend(d)};
+async function api(path,opt={}){const r=await fetch(SB_URL+'/rest/v1/'+path,{...opt,headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'x-team-key':TEAM,'Content-Type':'application/json',...(opt.headers||{})}});
+ const t=await r.text();if(!r.ok)throw new Error(r.status+' '+t.slice(0,160));return t?JSON.parse(t):null}
+const asData=f=>new Promise((ok,ko)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>ko(r.error);r.readAsDataURL(f)});
+async function run(files){files=[...files];const mf=files.find(f=>f.name==='manifest.json');
+ if(!mf){$('#st').innerHTML='<span class="err">manifest.json introuvable : choisir le dossier photos_DENV_import.</span>';return}
+ const man=JSON.parse(await mf.text());const byName=Object.fromEntries(files.map(f=>[f.name,f]));
+ let have=new Set();try{(await api('photos?select=id&id=like.denv_*&limit=1000')).forEach(x=>have.add(x.id))}catch(e){log('Lecture serveur : '+e.message,'err')}
+ let done=0,sent=0,skip=0,err=0;const N=man.length;
+ for(const m of man){const id='denv_'+m.fichier.replace(/\.jpe?g$/i,'');done++;$('#pb').style.width=(100*done/N)+'%';$('#st').textContent=`${done} / ${N} – ${m.fichier}`;
+  if(have.has(id)){skip++;continue}const f=byName[m.fichier];if(!f){log('Absent du dossier : '+m.fichier,'err');err++;continue}
+  try{const data=await asData(f);
+   await api('photos?on_conflict=id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify([{id,rec_id:m.rec,label:m.label,data,obs:'Appareil photo DENV',dev:'appareil DENV',ts:m.ts}])});
+   sent++;log('✔ '+m.fichier+' → '+m.label)}catch(e){err++;log('✖ '+m.fichier+' : '+e.message,'err')}}
+ $('#st').innerHTML=`<span class="${err?'err':'ok'}">Terminé : ${sent} envoyée(s), ${skip} déjà présente(s), ${err} erreur(s).</span>`+(err?' Relancer pour réessayer les erreurs.':' Vous pouvez fermer la page.')}
+$('#dir').onchange=e=>run(e.target.files);$('#fs').onchange=e=>run(e.target.files);
+</script></body></html>
