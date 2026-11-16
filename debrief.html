@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Débriefing – EIE BESS Ouvéa</title>
+<style>
+:root{--v:#1F4D33;--v2:#2E7D4F;--cl:#E8F0EA;--g:#5B6B62;--r:#B03A2E;--o:#C77700;--bd:#D5DED8}
+*{box-sizing:border-box}body{margin:0;font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#F4F7F5;color:#1b2a21}
+header{background:var(--v);color:#fff;padding:8px 14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:20}
+header h1{font-size:17px;margin:0}.st{font-size:12.5px;opacity:.85}.sp{flex:1}.hb{background:rgba(255,255,255,.15);color:#fff;border:0;border-radius:8px;padding:6px 10px;cursor:pointer;font:inherit;text-decoration:none}
+main{padding:14px;max-width:1500px;margin:0 auto}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:10px}
+.tile{background:#fff;border:1px solid var(--bd);border-radius:16px;padding:18px;cursor:pointer;text-decoration:none;color:inherit;display:block}
+.tile:hover{border-color:var(--v2);box-shadow:0 2px 10px rgba(0,0,0,.08)}.tile .ic{font-size:40px}.tile b{display:block;font-size:20px;color:var(--v);margin:6px 0}.tile span{color:var(--g);font-size:13px;display:block}
+.wrap{display:grid;grid-template-columns:minmax(380px,48%) 1fr;gap:12px;align-items:start}@media(max-width:900px){.wrap{grid-template-columns:1fr}}
+.pane{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:10px;min-width:0}.left{max-height:calc(100vh - 110px);overflow:auto}.right{position:sticky;top:60px;max-height:calc(100vh - 70px);overflow:auto}
+h2{font-size:18px;margin:2px 0 6px;color:var(--v)}h3{font-size:14px;margin:12px 0 6px;color:var(--v)}
+.sess{border:1px solid var(--bd);border-radius:10px;margin:8px 0;overflow:hidden}.sh{background:var(--cl);padding:8px 10px;cursor:pointer;display:flex;gap:8px;flex-wrap:wrap;align-items:center}.sh.sel{background:#CFE6D6}
+.sh b{color:var(--v)}table{width:100%;border-collapse:collapse}td{padding:5px 8px;border-top:1px solid #EDF1EE;vertical-align:top}tr.it{cursor:pointer}tr.it:hover{background:#F2F7F3}tr.sel{background:#D5EBDC}
+.b{display:inline-block;font-size:11px;font-weight:600;border-radius:6px;padding:1px 6px;margin:1px 2px 1px 0;white-space:nowrap}.bE{background:#E2F3E6;color:#22663B}.bI{background:#DDEFFF;color:#1F5C99}.bX{background:var(--r);color:#fff}.bO{background:#FFF0D6;color:#8A5300}.bG{background:#EEE;color:#555}
+.mut{color:var(--g);font-size:12.5px}.n{text-align:right;font-variant-numeric:tabular-nums}
+.phs{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}.ph{position:relative;background:#E3EAE6;border-radius:8px;overflow:hidden;aspect-ratio:1;cursor:zoom-in}.ph img{width:100%;height:100%;object-fit:cover}
+.zoom{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:100;display:flex;align-items:center;justify-content:center;cursor:zoom-out}.zoom img{max-width:96vw;max-height:92vh}
+.fm{display:grid;grid-template-columns:150px 1fr;gap:6px 10px;align-items:center}.fm label{font-size:12.5px;color:var(--g)}.fm input,.fm select,.fm textarea{font:inherit;padding:6px 8px;border:1px solid var(--bd);border-radius:8px;width:100%}.fm .ch{border-color:var(--o);background:#FFF8EC}
+.btn{background:var(--v2);color:#fff;border:0;border-radius:8px;padding:8px 14px;font:600 14px system-ui;cursor:pointer}.btnr{background:#fff;color:var(--r);border:1px solid var(--r);border-radius:8px;padding:7px 12px;font:600 13px system-ui;cursor:pointer}
+.acts{display:flex;gap:8px;margin-top:10px}.hist{font-size:12px;color:var(--g)}.hist div{border-left:3px solid var(--bd);padding-left:6px;margin:3px 0}
+.warn{background:#FFF3E0;border-left:4px solid var(--o);padding:8px 10px;border-radius:6px;margin:8px 0;font-size:13px}.empty{color:var(--g);padding:30px;text-align:center}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--v);color:#fff;padding:10px 16px;border-radius:10px;z-index:200;font-weight:600}.toast.e{background:var(--r)}
+.kpi{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}.kpi div{background:#fff;border:1px solid var(--bd);border-radius:10px;padding:8px 12px}.kpi b{font-size:20px;color:var(--v);display:block}
+</style></head><body>
+<header><h1>🌿 Débriefing – EIE BESS Fajawe, Ouvéa</h1><span class="st" id="st">Chargement…</span><span class="sp"></span><span class="st" id="who"></span><button class="hb" id="bwho">Changer de nom</button><a class="hb" href="#">🏠 Accueil</a></header>
+<main id="main"></main>
+<datalist id="dl"></datalist>
+<script>
+const SB_URL='https://bdpbsdqxrrtvzdocezzy.supabase.co',SB_KEY='sb_publishable_wS72835MaYCHp0BqBrR0Nw_FG8a7CbN',TEAM='OUVEA-D5DC1E';
+const FAUNE={reptiles:[['Bavayia crassicollis','Endémique Loyauté'],['Emoia loyaltiensis','Endémique Loyauté'],['Caledoniscincus austrocaledonicus','Endémique NC'],['Caledoniscincus haplorhinus','Endémique NC'],['Caledoniscincus atropunctatus','Indigène'],['Cryptoblepharus novocaledonicus','Endémique NC'],['Epibator nigrofasciolatus','Endémique NC'],['Phoboscincus garnieri','Endémique NC'],['Emoia cyanura','Indigène'],['Gehyra georgpotthasti','Indigène'],['Candoia bibroni','Indigène'],['Nactus pelagicus','Introduite'],['Lepidodactylus lugubris','Introduite'],['Hemidactylus frenatus','Introduite'],['Hemidactylus garnotii','Introduite'],['Hemiphyllodactylus typus','Introduite'],['Indotyphlops braminus','Introduite'],['Ranoidea aurea','Introduite']],
+oiseaux:[["Perruche d'Ouvéa",'Endémique Ouvéa'],['Martin-chasseur des Loyauté','Endémique Loyauté'],['Myzomèle cardinal','Endémique Loyauté'],['Gérygone des Loyauté','Endémique Loyauté'],['Échenilleur-pie des Loyauté','Endémique Loyauté'],['Siffleur doré','Endémique Loyauté'],['Monarque des Loyauté','Endémique Loyauté'],['Stourne des Loyauté','Endémique Loyauté'],['Zostérops à dos gris des Loyauté','Endémique Loyauté'],['Loriquet à tête bleue','Indigène'],['Méliphage à oreillons gris','Indigène'],['Pigeon à gorge blanche','Indigène'],['Ptilope de Grey','Indigène'],['Columbine turvert','Indigène'],['Coucou éclatant','Indigène'],['Coucou à éventail','Indigène'],['Autour australien','Indigène'],['Busard de Gould','Indigène'],['Faucon pèlerin','Indigène'],['Effraie des clochers','Indigène'],['Râle tiklin','Indigène'],['Talève sultane','Indigène'],['Salangane à croupion blanc','Indigène'],['Salangane soyeuse','Indigène'],['Hirondelle du Pacifique','Indigène'],['Hirondelle messagère','Indigène'],['Langrayen à ventre blanc','Indigène'],['Aigrette sacrée','Indigène'],['Pluvier fauve','Indigène'],['Poule domestique','Introduite']],
+fourmis:[['Leptomyrmex pallens','Endémique NC'],['Camponotus chloroticus','Indigène'],['Odontomachus simillimus','Indigène'],['Pheidole fervens','Indigène'],['Tetramorium pacificum','Indigène'],['Technomyrmex vitiensis','Indigène'],['Anoplolepis gracilipes','Envahissante'],['Wasmannia auropunctata','Envahissante'],['Pheidole megacephala','Envahissante'],['Solenopsis geminata','Envahissante'],['Paratrechina longicornis','Introduite'],['Tapinoma melanocephalum','Introduite'],['Technomyrmex albipes','Introduite'],['Brachymyrmex obscurior','Introduite'],['Nylanderia vaga','Introduite'],['Cardiocondyla emeryi','Introduite'],['Cardiocondyla obscurior','Introduite'],['Monomorium floricola','Introduite'],['Monomorium pharaonis','Introduite']]};
+const LIEUX=['','Emprise (M1-M3)','Témoin P1','Emprise + témoin','Hors carrés'];
+const G={reptiles:{ic:'🦎',t:'Reptiles',sess:'rep_session',obs:['rep_obs'],sf:['date','jour_nuit','lieu','debut','fin','temps_min','observateurs','remarque'],of:['espece','nombre','support','hauteur','remarque'],
+  sl:s=>`${s.date||''} · ${s.jour_nuit||''} · ${s.debut||'?'}–${s.fin||'?'} · ${s.temps_min??'?'} min`},
+ oiseaux:{ic:'🐦',t:'Oiseaux',sess:'oi_session',obs:['oi_contact','oi_nid'],sf:['date','lieu','passage','debut','fin','duree_min','remarque'],of:['espece','oiseau','nombre','phase','contact','distance','remarque'],
+  sl:s=>`${s.date||''} · passage ${s.passage||'?'} · début ${s.debut||'?'}`},
+ fourmis:{ic:'🐜',t:'Fourmis',sess:'fo_poste',obs:['fo_obs'],sf:['poste','carre','date','pose','lecture','duree_h','remarque'],of:['sorte','appat','nombre','conservees','abondance','tube','statut','identification','remarque'],
+  sl:s=>`${s.poste||''} ${s.carre?'('+s.carre+')':''} · ${s.date||''} · pose ${s.pose||'?'}`}};
+const LAB={date:'Date',jour_nuit:'Jour / nuit',lieu:'Lieu',debut:'Début',fin:'Fin',temps_min:'Temps de recherche (min)',observateurs:'Observateurs',remarque:'Remarque',espece:'Espèce',nombre:'Nombre',support:'Support',hauteur:'Hauteur (m)',passage:'Passage',duree_min:'Durée (min)',oiseau:'Oiseau (nid)',phase:'Phase',contact:'Contact',distance:'Distance',poste:'Poste',carre:'Carré',pose:'Pose',lecture:'Relève',duree_h:'Durée (h)',sorte:'Fourmi',appat:'Appât',conservees:'Conservées',abondance:'Abondance',tube:'Fiole / tube',statut:'Statut',identification:'Identification'};
+let DB={},PHBY={},NPH=0,LAST='1970-01-01T00:00:00Z',WHO='',SEL=null;
+const $=s=>document.querySelector(s);
+function h(t,a,...c){const e=document.createElement(t);for(const k in a||{}){const v=a[k];if(v==null||v===false)continue;if(k.startsWith('on'))e[k]=v;else e.setAttribute(k,v===true?'':v)}for(const x of c.flat(9))if(x!=null&&x!==false)e.append(x.nodeType?x:document.createTextNode(String(x)));return e}
+function toast(m,e){const t=h('div',{class:'toast'+(e?' e':'')},m);document.body.append(t);setTimeout(()=>t.remove(),e?5000:2200)}
+const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
+try{WHO=localStorage.getItem('revue_who')||''}catch(e){}
+function askWho(){const w=prompt('Votre nom (noté dans l’historique des corrections) :',WHO||'');if(w&&w.trim()){WHO=w.trim();try{localStorage.setItem('revue_who',WHO)}catch(e){}}showWho()}
+function showWho(){$('#who').textContent=WHO?'Correcteur : '+WHO:''}
+async function api(p,o={}){const r=await fetch(SB_URL+'/rest/v1/'+p,{...o,headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'x-team-key':TEAM,'Content-Type':'application/json',...(o.headers||{})}});const t=await r.text();if(!r.ok)throw new Error(r.status+' '+t.slice(0,160));return t?JSON.parse(t):null}
+const TYPES=['rep_session','rep_obs','oi_session','oi_contact','oi_nid','fo_poste','fo_obs','espece','arbre','jeunes','herbier','protegee','eee','carre','note'];
+async function load(full){$('#st').textContent='Synchronisation…';try{let more=true,off=0,n=0;const since=full?'1970-01-01T00:00:00Z':LAST;
+ while(more){const rows=await api(`releves?select=id,type,data,updated_at,deleted&type=in.(${TYPES.join(',')})&updated_at=gt.${encodeURIComponent(since)}&order=updated_at.asc&limit=1000&offset=${off}`);
+  for(const x of rows){const d=x.data||{};d.id=x.id;d.type=x.type;if(x.deleted||d.deleted)delete DB[x.id];else DB[x.id]=d;if(x.updated_at>LAST)LAST=x.updated_at;n++}more=rows.length===1000;off+=1000}
+ if(full||n){const ph=await api('photos?select=id,rec_id,label,obs,ts&limit=10000');NPH=ph.length;PHBY={};ph.forEach(p=>(PHBY[p.rec_id]=PHBY[p.rec_id]||[]).push(p))}
+ $('#st').textContent=`${Object.keys(DB).length} saisies · ${NPH} photos · à jour ${new Date().toLocaleTimeString('fr-FR').slice(0,5)}`;if(full||n)route()}catch(e){$('#st').textContent='⚠ Pas de connexion : '+e.message}}
+const live=t=>Object.values(DB).filter(r=>r.type===t);
+const nm=r=>r.espece||r.sorte||r.oiseau||r.texte||'';
+function phOf(r){const out=[...(PHBY[r.id]||[])];const s=new Set(out.map(p=>p.id));(r.photos||[]).forEach(id=>{if(id&&!s.has(id)){out.push({id});s.add(id)}});return out}
+const PC={};function getPh(id){return PC[id]||(PC[id]=api(`photos?id=eq.${encodeURIComponent(id)}&select=data`).then(r=>r&&r[0]?r[0].data:null).catch(()=>null))}
+function tile(p){const img=h('img',{alt:''});const t=h('div',{class:'ph',title:p.label||''},img);let src;new IntersectionObserver((es,o)=>{if(es.some(e=>e.isIntersecting)){o.disconnect();getPh(p.id).then(d=>{if(d){src=d;img.src=d}})}}).observe(t);t.onclick=()=>{if(src){const z=h('div',{class:'zoom',onclick:()=>z.remove()},h('img',{src}));document.body.append(z)}};return t}
+function badge(g,n){if(!n)return null;const f=(FAUNE[g]||[]).find(x=>norm(x[0])===norm(n));if(!f)return /indéterminé|sp\b|\?/i.test(n)?h('span',{class:'b bG'},'à identifier'):h('span',{class:'b bX',title:'Nom absent de la liste de référence : nom local ou faute ?'},'? nom à vérifier');
+ const c={'Endémique Ouvéa':'bE','Endémique Loyauté':'bE','Endémique NC':'bE','Indigène':'bI','Envahissante':'bX','Introduite':'bO'}[f[1]]||'bG';return h('span',{class:'b '+c},f[1])}
+async function saveRec(id,ch,note){const r=DB[id];const d=JSON.parse(JSON.stringify(r));const now=new Date().toISOString();d.hist=d.hist||[];let n=0;
+ for(const[k,v]of Object.entries(ch)){if(String(d[k]??'')===String(v??''))continue;d.hist.push({u:now,par:WHO||'?',champ:k,avant:d[k]??'',apres:v});d[k]=v;n++}if(!n)return false;
+ d.u=now;d.remarque_correction=(note||'Corrigé en débriefing')+` – ${WHO||'?'} ${now.slice(0,10)}`;
+ await api('releves?on_conflict=id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify([{id:d.id,type:d.type,data:d,obs:d.obs||'',dev:d.dev||'',ts:d.ts||now,deleted:!!d.deleted}])});
+ if(d.deleted)delete DB[id];else DB[id]=d;return true}
+function form(id,fields,g){const r=DB[id];const ins={};const fm=h('div',{class:'fm'},fields.map(k=>{const v=r[k]??'';let el;
+  if(k==='lieu')el=h('select',{},LIEUX.map(o=>h('option',{value:o,selected:o===v},o||'— à préciser —')));
+  else if(k==='remarque'||k==='identification')el=h('textarea',{rows:2},String(v));
+  else el=h('input',{value:v,list:(k==='espece'||k==='sorte'||k==='oiseau')?'dl':null});
+  ins[k]=el;el.addEventListener('input',()=>el.classList.toggle('ch',String(el.value)!==String(v)));el.addEventListener('change',()=>el.classList.toggle('ch',String(el.value)!==String(v)));return[h('label',{},LAB[k]||k),el]}));
+ const sv=h('button',{class:'btn',onclick:async()=>{if(!WHO)askWho();const ch={};for(const[k,el]of Object.entries(ins)){let nv=el.value;const ov=r[k];if(typeof ov==='number'&&nv!==''&&!isNaN(+nv))nv=+nv;if(String(nv)!==String(ov??''))ch[k]=nv}
+  if(!Object.keys(ch).length)return toast('Rien n’a changé');try{await saveRec(id,ch);toast('✔ Enregistré');route()}catch(e){toast('Erreur : '+e.message,true)}}},'💾 Enregistrer');
+ const del=h('button',{class:'btnr',onclick:async()=>{if(!confirm('Supprimer cette saisie ? (masquée, récupérable dans l’historique)'))return;if(!WHO)askWho();try{await saveRec(id,{deleted:true},'Supprimé en débriefing');SEL=null;toast('Supprimé');route()}catch(e){toast('Erreur : '+e.message,true)}}},'🗑 Supprimer');
+ return h('div',{},fm,h('div',{class:'acts'},sv,del))}
+function detail(g,id){const R=$('#det');R.innerHTML='';const r=DB[id];if(!r){R.append(h('div',{class:'empty'},'Choisir une session ou une observation à gauche.'));return}
+ const isS=r.type===G[g].sess;const ph=phOf(r);
+ R.append(h('h2',{},isS?(G[g].t.slice(0,-1)+' – '+G[g].sl(r)):(nm(r)||r.type)),h('div',{},isS?null:badge(g,nm(r))),h('p',{class:'mut'},`saisi par ${r.obs||'?'} · ${r.date||''}${r.t_chrono?' · chrono '+r.t_chrono:''}${r.lat?` · GPS ${(+r.lat).toFixed(6)}, ${(+r.lon).toFixed(6)}`:''}${r.source?' · '+r.source:''}`));
+ if(g==='oiseaux'&&isS&&!r.lieu)R.append(h('div',{class:'warn'},'Préciser le lieu : deux suivis se faisaient en même temps (emprise M1-M3 et parcelle témoin P1).'));
+ R.append(h('h3',{},`Photos (${ph.length})`),ph.length?h('div',{class:'phs'},ph.map(tile)):h('p',{class:'mut'},'Aucune photo.'),h('h3',{},'Corriger'),form(id,isS?G[g].sf:(r.type==='oi_nid'?['oiseau','arbre','hauteur','entree','remarque']:G[g].of),g));
+ if(r.hist&&r.hist.length)R.append(h('h3',{},'Historique'),h('div',{class:'hist'},r.hist.slice().reverse().map(x=>h('div',{},`${String(x.u).slice(0,16).replace('T',' ')} · ${x.par} · ${LAB[x.champ]||x.champ} : « ${x.avant} » → « ${x.apres} »`))))}
+function vGroup(g){const cfg=G[g];const m=$('#main');m.innerHTML='';const dl=$('#dl');dl.innerHTML='';FAUNE[g].forEach(f=>dl.append(h('option',{value:f[0]})));
+ const sess=live(cfg.sess).sort((a,b)=>String(a.ts).localeCompare(String(b.ts)));const obs=cfg.obs.flatMap(t=>live(t));
+ const sp={};obs.forEach(o=>{const k=nm(o);if(k)sp[k]=(sp[k]||0)+(+o.nombre||1)});
+ const L=h('div',{class:'pane left'}),R=h('div',{class:'pane right',id:'det'});
+ L.append(h('h2',{},`${cfg.ic} ${cfg.t}`),h('div',{class:'kpi'},h('div',{},h('b',{},sess.length),'sessions / postes'),h('div',{},h('b',{},obs.length),'observations'),h('div',{},h('b',{},Object.keys(sp).length),'noms d’espèces')),
+  h('p',{class:'mut'},Object.entries(sp).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k} (${v})`).join(' · ')));
+ const box=(s,list)=>{const hd=h('div',{class:'sh'+(SEL===(s&&s.id)?' sel':''),onclick:()=>{if(s){SEL=s.id;route()}}},h('b',{},s?cfg.sl(s):'Hors session'),s&&s.lieu?h('span',{class:'b bI'},s.lieu):(s&&g==='oiseaux'?h('span',{class:'b bO'},'lieu à préciser'):null),s?h('span',{class:'mut'},(s.obs||'').split(' ')[0]):null,h('span',{class:'mut'},`${list.length} obs.`),s&&phOf(s).length?h('span',{class:'mut'},'📷 '+phOf(s).length):null);
+  const tb=h('table',{},list.sort((a,b)=>String(a.ts).localeCompare(String(b.ts))).map(o=>h('tr',{class:'it'+(SEL===o.id?' sel':''),onclick:()=>{SEL=o.id;route()}},h('td',{},h('b',{},nm(o)||'—'),' ',badge(g,nm(o))),h('td',{class:'mut'},o.type==='oi_nid'?'nid':(o.appat||o.phase||o.support||'')),h('td',{class:'n'},o.nombre||''),h('td',{class:'n'},phOf(o).length?'📷'+phOf(o).length:''))));
+  return h('div',{class:'sess'},hd,list.length?tb:null)};
+ const ids=new Set(sess.map(s=>s.id));sess.forEach(s=>L.append(box(s,obs.filter(o=>o.session===s.id))));
+ const orph=obs.filter(o=>!ids.has(o.session));if(orph.length)L.append(box(null,orph));
+ if(g==='reptiles'){const n=Object.values(DB).filter(r=>r.type==='note'&&/reptil/i.test(r.texte||''));n.forEach(x=>L.append(h('div',{class:'sess'},h('div',{class:'sh',onclick:()=>{SEL=x.id;route()}},h('b',{},'📝 '+x.texte.slice(0,90)),h('span',{class:'mut'},'📷 '+phOf(x).length)))))}
+ if(g==='fourmis'){const n=Object.values(DB).filter(r=>r.type==='note'&&/fourmi/i.test(r.texte||''));n.forEach(x=>L.append(h('div',{class:'sess'},h('div',{class:'sh',onclick:()=>{SEL=x.id;route()}},h('b',{},'📝 '+x.texte.slice(0,90)),h('span',{class:'mut'},'📷 '+phOf(x).length)))))}
+ m.append(h('div',{class:'wrap'},L,R));
+ const r=DB[SEL];if(r&&r.type==='note'){R.innerHTML='';R.append(h('h2',{},'Note de terrain'),h('p',{},r.texte),h('h3',{},'Photos'),h('div',{class:'phs'},phOf(r).map(tile)),h('h3',{},'Corriger'),form(r.id,['texte','remarque']))}else detail(g,SEL)}
+function vHome(){const m=$('#main');m.innerHTML='';const c=t=>live(t).length;const pl=['espece','arbre','jeunes','herbier'].reduce((a,t)=>a+c(t),0);
+ const T=(href,ic,t,txt,onclick)=>h('a',{class:'tile',href,onclick},h('div',{class:'ic'},ic),h('b',{},t),h('span',{},txt));
+ m.append(h('h2',{},'Choisir un groupe'),h('p',{class:'mut'},'Toutes les données de terrain (appli + rapports), avec les photos. Chaque correction est enregistrée dans Supabase avec l’ancienne valeur, l’auteur et l’heure.'),
+  h('div',{class:'tiles'},T('#plantes','🌿','Plantes',`${pl} saisies : espèces, arbres, jeunes plants, herbier, protégées, envahissantes · noms à vérifier, renommage en un clic`),
+   T('#reptiles','🦎','Reptiles',`${c('rep_session')} sessions · ${c('rep_obs')} observations`),T('#oiseaux','🐦','Oiseaux',`${c('oi_session')} sessions · ${c('oi_contact')} contacts · ${c('oi_nid')} nid(s)`),
+   T('#fourmis','🐜','Fourmis',`${c('fo_poste')} postes · ${c('fo_obs')} lignes (fioles)`)))}
+async function openPlantes(){$('#main').innerHTML='<p class="empty">Ouverture du volet plantes…</p>';try{let t=await(await fetch('revue.html',{cache:'no-store'})).text();const base=location.href.replace(/[^/]*$/,'');
+ t=t.replace('<head>','<head><base href="'+base+'">').replace("askWho();load(true);","if(!WHO)askWho();else $('#who').textContent='Correcteur : '+WHO;load(true);").replace('<span class="st" id="who">','<a class="hb" href="debrief.html" style="text-decoration:none">🏠 Accueil</a><span class="st" id="who">');
+ location.replace(URL.createObjectURL(new Blob([t],{type:'text/html'})))}catch(e){location.href='revue.html'}}
+function route(){const g=location.hash.slice(1);if(g==='plantes'){history.replaceState(null,'','#');return openPlantes()}if(G[g])vGroup(g);else vHome()}
+addEventListener('hashchange',()=>{SEL=null;route()});$('#bwho').onclick=askWho;
+if(!WHO)askWho();else showWho();load(true);setInterval(()=>{if(!document.querySelector('.fm .ch'))load(false)},20000);
+</script></body></html>
