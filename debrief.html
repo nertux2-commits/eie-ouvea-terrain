@@ -49,14 +49,14 @@ function toast(m,e){const t=h('div',{class:'toast'+(e?' e':'')},m);document.body
 const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
 try{WHO=localStorage.getItem('revue_who')||''}catch(e){}
 function askWho(){const w=prompt('Votre nom (noté dans l’historique des corrections) :',WHO||'');if(w&&w.trim()){WHO=w.trim();try{localStorage.setItem('revue_who',WHO)}catch(e){}}showWho()}
-function showWho(){$('#who').textContent=WHO?'Correcteur : '+WHO:''}
+function showWho(){$('#who').textContent=WHO?'Correcteur : '+WHO:'Nom : non renseigné (cliquer « Changer de nom »)'}
 async function api(p,o={}){const r=await fetch(SB_URL+'/rest/v1/'+p,{...o,headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'x-team-key':TEAM,'Content-Type':'application/json',...(o.headers||{})}});const t=await r.text();if(!r.ok)throw new Error(r.status+' '+t.slice(0,160));return t?JSON.parse(t):null}
 const TYPES=['rep_session','rep_obs','oi_session','oi_contact','oi_nid','fo_poste','fo_obs','espece','arbre','jeunes','herbier','protegee','eee','carre','note'];
 async function load(full){$('#st').textContent='Synchronisation…';try{let more=true,off=0,n=0;const since=full?'1970-01-01T00:00:00Z':LAST;
  while(more){const rows=await api(`releves?select=id,type,data,updated_at,deleted&type=in.(${TYPES.join(',')})&updated_at=gt.${encodeURIComponent(since)}&order=updated_at.asc&limit=1000&offset=${off}`);
   for(const x of rows){const d=x.data||{};d.id=x.id;d.type=x.type;if(x.deleted||d.deleted)delete DB[x.id];else DB[x.id]=d;if(x.updated_at>LAST)LAST=x.updated_at;n++}more=rows.length===1000;off+=1000}
  if(full||n){const ph=await api('photos?select=id,rec_id,label,obs,ts&limit=10000');NPH=ph.length;PHBY={};ph.forEach(p=>(PHBY[p.rec_id]=PHBY[p.rec_id]||[]).push(p))}
- $('#st').textContent=`${Object.keys(DB).length} saisies · ${NPH} photos · à jour ${new Date().toLocaleTimeString('fr-FR').slice(0,5)}`;if(full||n)route()}catch(e){$('#st').textContent='⚠ Pas de connexion : '+e.message}}
+ $('#st').textContent=`${Object.keys(DB).length} saisies · ${NPH} photos · à jour ${new Date().toLocaleTimeString('fr-FR').slice(0,5)}`;if(full||n)route()}catch(e){$('#st').textContent='⚠ Base de données injoignable : '+e.message;if(!$('#neterr'))$('#main').prepend(h('div',{class:'warn',id:'neterr'},'Impossible de joindre la base de données (Supabase). Vérifier la connexion internet ; sur le réseau de la Province, le site *.supabase.co est peut-être bloqué : essayer en 4G (partage de connexion du téléphone).'))}}
 const live=t=>Object.values(DB).filter(r=>r.type===t);
 const nm=r=>r.espece||r.sorte||r.oiseau||r.texte||'';
 function phOf(r){const out=[...(PHBY[r.id]||[])];const s=new Set(out.map(p=>p.id));(r.photos||[]).forEach(id=>{if(id&&!s.has(id)){out.push({id});s.add(id)}});return out}
@@ -110,5 +110,5 @@ async function openPlantes(){$('#main').innerHTML='<p class="empty">Ouverture du
  location.replace(URL.createObjectURL(new Blob([t],{type:'text/html'})))}catch(e){location.href='revue.html'}}
 function route(){const g=location.hash.slice(1);if(g==='plantes'){history.replaceState(null,'','#');return openPlantes()}if(G[g])vGroup(g);else vHome()}
 addEventListener('hashchange',()=>{SEL=null;route()});$('#bwho').onclick=askWho;
-if(!WHO)askWho();else showWho();load(true);setInterval(()=>{if(!document.querySelector('.fm .ch'))load(false)},20000);
+showWho();route();load(true);setInterval(()=>{if(!document.querySelector('.fm .ch'))load(false)},20000);
 </script></body></html>
