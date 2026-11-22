@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Export photothèque – EIE Ouvéa</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+body{font-family:Arial,sans-serif;max-width:760px;margin:30px auto;padding:0 16px;color:#1f2937}
+h1{font-size:22px;color:#2E6B3F}button{font-size:16px;padding:10px 18px;background:#2E6B3F;color:#fff;border:0;border-radius:6px;cursor:pointer}
+button:disabled{background:#9ca3af}#bar{height:14px;background:#e5e7eb;border-radius:7px;overflow:hidden;margin:14px 0}#bar div{height:100%;width:0;background:#2E6B3F}
+#log{font-size:13px;white-space:pre-wrap;background:#f3f4f6;padding:10px;border-radius:6px;min-height:60px}
+</style></head><body>
+<h1>Export de la photothèque – Inventaire BESS Fajawe (Ouvéa)</h1>
+<p>Ce bouton télécharge toutes les photos rattachées aux fiches de l'inventaire, renommées et classées par groupe, avec un index consultable (index.html) dans le ZIP. Compter quelques minutes (≈ 350 Mo). Ne pas fermer la page pendant l'export.</p>
+<button id="go">Lancer l'export</button>
+<div id="bar"><div></div></div><div id="log">Prêt.</div>
+<script>
+const U='https://bdpbsdqxrrtvzdocezzy.supabase.co/rest/v1/',H={apikey:'sb_publishable_wS72835MaYCHp0BqBrR0Nw_FG8a7CbN','x-team-key':'OUVEA-D5DC1E'};
+const log=t=>{document.getElementById('log').textContent=t},bar=p=>{document.querySelector('#bar div').style.width=(100*p).toFixed(1)+'%'};
+async function get(path){const r=await fetch(U+path,{headers:H});if(!r.ok)throw new Error(r.status+' '+await r.text());return r.json()}
+async function all(table,sel){let out=[],o=0;for(;;){const b=await get(`${table}?select=${sel}&order=id&limit=500&offset=${o}`);out=out.concat(b);if(b.length<500)break;o+=500}return out}
+const slug=s=>(s||'').toString().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9.]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60);
+const G={espece:['Flore','FLO'],eee:['Flore','FLO'],protegee:['Flore','FLO'],arbre:['Arbres','ARB'],jeunes:['Regeneration','REG'],herbier:['Herbier','HER'],
+ rep_obs:['Reptiles','REP'],rep_session:['Reptiles','REP'],oi_contact:['Oiseaux','OIS'],oi_session:['Oiseaux','OIS'],oi_nid:['Oiseaux','OIS'],
+ fo_poste:['Fourmis','FOU'],fo_obs:['Fourmis','FOU'],carre:['Milieux','MIL']};
+function describe(t,d){
+ const cq=(d.carre||'')+(d.quart||'');
+ switch(t){
+  case 'espece':case 'eee':case 'protegee':return{cq,taxon:d.espece,num:'',leg:`${d.espece||''} – relevé ${cq}`};
+  case 'arbre':return{cq,taxon:d.espece,num:'Arbre '+d.num,leg:`${d.espece||''} – arbre n° ${d.num} (${cq}), circonférence ${d.tour} cm`};
+  case 'jeunes':return{cq:d.carre||'',taxon:d.espece,num:'',leg:`${d.espece||''} – régénération ${d.carre||''}`};
+  case 'herbier':return{cq,taxon:d.nom,num:d.num||'sans n°',leg:`Herbier ${d.num||'sans n°'} – ${d.nom||''}`};
+  case 'rep_obs':return{cq:d.lieu||'',taxon:d.espece,num:'',leg:`${d.espece||''} – ${d.date||''}`};
+  case 'rep_session':return{cq:d.lieu||'',taxon:'',num:'',leg:`Session reptiles ${d.date||''} ${d.debut||''}`};
+  case 'oi_contact':return{cq:'',taxon:d.espece,num:'',leg:`${d.espece||''} – ${d.date||''}`};
+  case 'oi_session':return{cq:d.lieu||'',taxon:'',num:'',leg:`Passage oiseaux ${d.date||''} ${d.debut||''} ${d.lieu||''}`};
+  case 'oi_nid':return{cq:'',taxon:d.oiseau,num:'',leg:`Nid de ${d.oiseau||''} dans ${d.espece_arbre||''}`};
+  case 'fo_poste':return{cq:d.carre||'',taxon:'',num:d.poste||'',leg:`Poste fourmis ${d.poste||''} (${d.carre||''})`};
+  case 'fo_obs':return{cq:d.carre||'',taxon:d.sorte,num:d.tube||'',leg:`${d.sorte||''} – ${d.poste||''} ${d.appat||''} – ${d.tube||''}`};
+  case 'carre':return{cq:d.carre,taxon:'',num:'',leg:`Milieu – carré ${d.carre}`};
+  case 'note':return{cq:'',taxon:'',num:'',leg:(d.texte||'').slice(0,120)};
+ }return{cq:'',taxon:'',num:'',leg:''}}
+document.getElementById('go').onclick=async()=>{
+ const btn=document.getElementById('go');btn.disabled=true;
+ try{
+  log('Lecture des fiches…');const R=await all('releves','id,type,data,deleted');
+  const rec={};for(const r of R){const d=r.data||{};if(r.deleted||d.deleted)continue;rec[r.id]={t:r.type,d}}
+  log('Lecture de la liste des photos…');const P=await all('photos','id,rec_id,label,obs,ts');
+  const rows=[];
+  for(const p of P){const r=rec[p.rec_id];if(!r)continue;let g=G[r.t];
+   if(r.t==='note'){const pr=(r.d.protocole||'');g=pr==='Fourmis'?G.fo_obs:pr==='Reptiles'?G.rep_obs:G.carre}
+   if(!g)continue;const ds=describe(r.t,r.d);rows.push({p,r,g,ds})}
+  const key=x=>[x.g[1],x.ds.cq||'',x.ds.taxon||'',x.ds.num||'',x.p.ts||'',x.p.id].join('|');
+  rows.sort((a,b)=>key(a)<key(b)?-1:1);
+  const cnt={};const idx=[];
+  for(const x of rows){cnt[x.g[1]]=(cnt[x.g[1]]||0)+1;const ref=x.g[1]+'-'+String(cnt[x.g[1]]).padStart(4,'0');
+   const parts=[ref,x.ds.cq,x.ds.num,x.ds.taxon].filter(Boolean).map(slug).filter(Boolean);
+   const file=x.g[0]+'/'+parts.join('_')+'.jpg';
+   idx.push({ref,groupe:x.g[0],fichier:file,lieu:x.ds.cq||'',taxon:x.ds.taxon||'',numero:x.ds.num||'',date:x.r.d.date||'',auteur:x.p.obs||x.r.d.obs||'',legende:x.ds.leg||'',_id:x.p.id})}
+  const zip=new JSZip();const n=idx.length;
+  for(let i=0;i<n;i+=8){const ids=idx.slice(i,i+8);
+   const b=await get(`photos?select=id,data&id=in.(${ids.map(x=>'"'+x._id+'"').join(',')})`);const m={};b.forEach(o=>m[o.id]=o.data);
+   for(const x of ids){const s=m[x._id];if(!s)continue;const b64=s.slice(s.indexOf(',')+1);zip.file('Phototheque_BESS_Fajawe_Ouvea/'+x.fichier,b64,{base64:true,binary:true})}
+   bar((i+8)/n*0.9);log(`Photos : ${Math.min(i+8,n)} / ${n}`)}
+  const clean=idx.map(({_id,...k})=>k);
+  zip.file('Phototheque_BESS_Fajawe_Ouvea/index.html',indexHtml(clean));
+  const csv=['Réf;Groupe;Fichier;Lieu;Taxon;Numéro;Date;Auteur;Légende'].concat(clean.map(o=>[o.ref,o.groupe,o.fichier,o.lieu,o.taxon,o.numero,o.date,o.auteur,o.legende].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';'))).join('\r\n');
+  zip.file('Phototheque_BESS_Fajawe_Ouvea/index_photos.csv','﻿'+csv);
+  dl(new Blob([JSON.stringify(clean)],{type:'application/json'}),'phototheque_index.json');
+  log('Création du ZIP…');
+  const blob=await zip.generateAsync({type:'blob',compression:'STORE',streamFiles:true},m=>bar(0.9+m.percent/1000));
+  dl(blob,'Phototheque_BESS_Fajawe_Ouvea.zip');bar(1);
+  const byG={};clean.forEach(o=>byG[o.groupe]=(byG[o.groupe]||0)+1);
+  log(`Terminé : ${n} photos.\n`+Object.entries(byG).map(([k,v])=>k+' : '+v).join('\n')+'\nFichiers dans Téléchargements : Phototheque_BESS_Fajawe_Ouvea.zip et phototheque_index.json');
+ }catch(e){log('Erreur : '+e.message);btn.disabled=false}};
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),1000)}
+function indexHtml(data){return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Photothèque – Inventaire BESS Fajawe (Ouvéa)</title>
+<style>body{font-family:Arial,sans-serif;margin:20px;color:#1f2937}h1{font-size:20px;color:#2E6B3F}input,select{font-size:15px;padding:6px;margin-right:8px}
+table{border-collapse:collapse;width:100%;margin-top:12px;font-size:13px}th,td{border-bottom:1px solid #ddd;padding:5px;text-align:left;vertical-align:middle}th{background:#DCEBDF;position:sticky;top:0}
+img{width:110px;height:74px;object-fit:cover;border-radius:4px}i{font-style:italic}</style></head><body>
+<h1>Photothèque – Inventaire biologique de l'état initial, BESS Fajawe (Ouvéa) – DENV-PIL, novembre 2026</h1>
+<input id="q" placeholder="Rechercher : espèce, réf., carré, n° d'arbre, herbier…" size="50"><select id="g"><option value="">Tous les groupes</option></select><span id="n"></span>
+<table><thead><tr><th>Photo</th><th>Réf.</th><th>Groupe</th><th>Lieu</th><th>Taxon</th><th>N°</th><th>Date</th><th>Auteur</th><th>Légende</th></tr></thead><tbody id="t"></tbody></table>
+<script>const D=${JSON.stringify(data)};const g=document.getElementById('g');[...new Set(D.map(o=>o.groupe))].forEach(x=>g.add(new Option(x,x)));
+function r(){const q=document.getElementById('q').value.toLowerCase(),gv=g.value;const L=D.filter(o=>(!gv||o.groupe===gv)&&(!q||Object.values(o).join(' ').toLowerCase().includes(q)));
+document.getElementById('n').textContent=L.length+' photo(s)';document.getElementById('t').innerHTML=L.map(o=>'<tr><td><a href="'+o.fichier+'" target="_blank"><img loading="lazy" src="'+o.fichier+'"></a></td><td>'+o.ref+'</td><td>'+o.groupe+'</td><td>'+o.lieu+'</td><td><i>'+o.taxon+'</i></td><td>'+o.numero+'</td><td>'+o.date+'</td><td>'+o.auteur+'</td><td>'+o.legende+'</td></tr>').join('')}
+document.getElementById('q').oninput=r;g.onchange=r;r();<\/script></body></html>`}
+</script></body></html>
