@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Photothèque – Inventaire BESS Fajawe (Ouvéa)</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+body{font-family:Arial,sans-serif;max-width:1100px;margin:24px auto;padding:0 16px;color:#1f2937}
+header{display:flex;gap:16px;align-items:center}header img{height:64px}h1{font-size:21px;color:#2E6B3F;margin:0}h2{font-size:17px;color:#2E6B3F;margin-top:28px}
+.box{background:#f3f6f4;border:1px solid #d7e5da;border-radius:8px;padding:14px 16px}
+label{display:inline-block;margin:6px 14px 6px 0;font-size:14px}input,select{font-size:14px;padding:6px;border:1px solid #bbb;border-radius:4px}
+button{font-size:15px;padding:9px 16px;background:#2E6B3F;color:#fff;border:0;border-radius:6px;cursor:pointer}button:disabled{background:#9ca3af}
+#bar{height:12px;background:#e5e7eb;border-radius:6px;overflow:hidden;margin:12px 0 6px}#bar div{height:100%;width:0;background:#2E6B3F}
+#log{font-size:13px;white-space:pre-wrap}table{border-collapse:collapse;width:100%;font-size:13px;margin-top:10px}
+th,td{border-bottom:1px solid #e2e2e2;padding:5px;text-align:left}th{background:#DCEBDF;position:sticky;top:0}td i{font-style:italic}
+.v{padding:3px 9px;font-size:12px}small{color:#555}
+@media (max-width:700px){td:nth-child(7),th:nth-child(7),td:nth-child(8),th:nth-child(8){display:none}}
+</style></head><body>
+<header><img id="lg" alt=""><div><h1>Photothèque – Inventaire biologique de l’état initial<br>Projet BESS, Fajawe (Ouvéa)</h1><small>Direction de l’Environnement – Province des îles Loyauté – novembre 2026</small></div></header>
+<h2>Télécharger la photothèque complète</h2>
+<div class="box">
+<p style="margin-top:0">Environ 800 photographies classées par groupe (Flore, Arbres, Régénération, Herbier, Reptiles, Oiseaux, Fourmis, Milieux), avec leur index. Fichier ZIP d’environ 350 Mo, préparé dans le navigateur : compter quelques minutes, sur ordinateur, sans fermer la page.</p>
+<label>Nom <input id="nom" size="24" required></label><label>Organisme <input id="org" size="24" required></label><label>Email (facultatif) <input id="mail" size="26" type="email"></label><br>
+<button id="go">Télécharger le ZIP</button>
+<div id="bar"><div></div></div><div id="log"></div>
+<small>Citation : Kakue G., Waitronyie M., Bako G., Ita J.-M. &amp; Meaou C. 2026. Inventaire biologique de l’état initial – emprise du projet de stockage d’énergie par batteries (BESS), Fajawe, Ouvéa. Rapport technique, DENV, Province des îles Loyauté.</small>
+</div>
+<h2>Rechercher une photo</h2>
+<input id="q" placeholder="Espèce, réf. (ex. ARB-0042), carré, n° d’arbre, herbier…" size="48"> <select id="gf"><option value="">Tous les groupes</option></select> <span id="n">Chargement de l’index…</span>
+<table><thead><tr><th>Réf.</th><th>Groupe</th><th>Lieu</th><th>Taxon</th><th>N°</th><th>Date</th><th>Auteur</th><th>Légende</th><th></th></tr></thead><tbody id="t"></tbody></table>
+<script src="logo_pil.js"></script>
+<script src="phototheque_index.js"></script>
+<script src="phototheque.js"></script>
+</body></html>
