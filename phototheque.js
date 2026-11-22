@@ -1,6 +1,5 @@
 try{document.getElementById("lg").src=LOGO_PIL}catch(e){}
 const U='https://bdpbsdqxrrtvzdocezzy.supabase.co/rest/v1/',H={apikey:'sb_publishable_wS72835MaYCHp0BqBrR0Nw_FG8a7CbN','x-team-key':'PHOTOTHEQUE-PUB26'};
-const NOTIF='https://formsubmit.co/ajax/g-kakue@loyalty.nc',CC='m-waitronyie@loyalty.nc,m-wejieme@loyalty.nc';
 const log=t=>{document.getElementById('log').textContent=t},bar=p=>{document.querySelector('#bar div').style.width=(100*p).toFixed(1)+'%'};
 async function get(path){const r=await fetch(U+path,{headers:H});if(!r.ok)throw new Error(r.status+' '+await r.text());return r.json()}
 async function all(table,sel){let out=[],o=0;for(;;){const b=await get(`${table}?select=${sel}&order=id&limit=500&offset=${o}`);out=out.concat(b);if(b.length<500)break;o+=500}return out}
@@ -54,7 +53,7 @@ document.getElementById('t').onclick=async e=>{const b=e.target.closest('button.
  document.getElementById('q').oninput=render;gf.onchange=render;render()}catch(e){document.getElementById('n').textContent='Index indisponible : '+e.message}})();
 async function notifier(nom,org,mail){
  try{await fetch(U+'telechargements',{method:'POST',headers:{...H,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({nom,organisme:org,email:mail,objet:'Photothèque BESS Fajawe',navigateur:navigator.userAgent.slice(0,180)})})}catch(e){}
- try{await fetch(NOTIF,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({_subject:'Téléchargement de la photothèque BESS Fajawe (Ouvéa)',_cc:CC,_template:'table',_captcha:'false',Nom:nom,Organisme:org,Email:mail||'non renseigné',Date:new Date().toLocaleString('fr-FR',{timeZone:'Pacific/Noumea'})})})}catch(e){}}
+}
 document.getElementById('go').onclick=async()=>{
  const nom=document.getElementById('nom').value.trim(),org=document.getElementById('org').value.trim(),mail=document.getElementById('mail').value.trim();
  if(!nom||!org){log('Merci d’indiquer votre nom et votre organisme.');return}
