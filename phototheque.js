@@ -29,15 +29,15 @@ let IDX=null;
 async function buildIndex(){
   const R=await all('releves','id,type,data,deleted');
   const rec={};for(const r of R){const d=r.data||{};if(r.deleted||d.deleted)continue;rec[r.id]={t:r.type,d}}
-  const P=await all('photos','id,rec_id,label,obs,ts');
+  const P=await all('photos','id,rec_id,label,obs,ts,ref');
   const rows=[];
   for(const p of P){const r=rec[p.rec_id];if(!r)continue;let g=G[r.t];
    if(r.t==='note'){const pr=(r.d.protocole||'');g=pr==='Fourmis'?G.fo_obs:pr==='Reptiles'?G.rep_obs:G.carre}
    if(!g)continue;const ds=describe(r.t,r.d);rows.push({p,r,g,ds})}
-  const key=x=>[x.g[1],x.ds.cq||'',x.ds.taxon||'',x.ds.num||'',x.p.ts||'',x.p.id].join('|');
+  const key=x=>x.p.ref||[x.g[1],x.ds.cq||'',x.ds.taxon||'',x.ds.num||'',x.p.ts||'',x.p.id].join('|');
   rows.sort((a,b)=>key(a)<key(b)?-1:1);
   const cnt={},idx=[];
-  for(const x of rows){cnt[x.g[1]]=(cnt[x.g[1]]||0)+1;const ref=x.g[1]+'-'+String(cnt[x.g[1]]).padStart(4,'0');
+  for(const x of rows){cnt[x.g[1]]=(cnt[x.g[1]]||0)+1;const ref=x.p.ref||(x.g[1]+'-'+String(cnt[x.g[1]]).padStart(4,'0'));
    const parts=[ref,x.ds.cq,x.ds.num,x.ds.taxon].filter(Boolean).map(slug).filter(Boolean);
    idx.push({ref,groupe:x.g[0],fichier:x.g[0]+'/'+parts.join('_')+'.jpg',lieu:x.ds.cq||'',taxon:x.ds.taxon||'',numero:x.ds.num||'',date:x.r.d.date||'',auteur:x.p.obs||x.r.d.obs||'',legende:x.ds.leg||'',_id:x.p.id})}
   return idx}
